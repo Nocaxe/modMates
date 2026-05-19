@@ -3,4 +3,6 @@
 # Python
 backend/venv/
 backend/app/__pycache__/
+backend/alembic/__pycache__/
 backend/app/*.pyc
+backend/alembic/*.pyc
