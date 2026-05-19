@@ -1,1 +1,6 @@
 .env
+
+# Python
+backend/venv/
+backend/app/__pycache__/
+backend/app/*.pyc
