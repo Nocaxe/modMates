@@ -11,4 +11,4 @@ class Settings(BaseSettings):
         env_file = '.env'
 
 # Instance used across the app
-settings = Settings()
+settings = Settings() # type: ignore (database_url is required but will be loaded from .env)
