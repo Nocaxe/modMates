@@ -1,9 +1,8 @@
 .env
 
 # Python
+__pycache__/
 backend/venv/
-backend/app/__pycache__/
-backend/alembic/__pycache__/
 backend/app/*.pyc
 backend/alembic/*.pyc
 
