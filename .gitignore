@@ -1,11 +1,11 @@
 .env
 
 # Python
-backend/venv/
-backend/app/__pycache__/
-backend/alembic/__pycache__/
-backend/app/*.pyc
-backend/alembic/*.pyc
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/
+.ruff_cache/
 
 # Node
 frontend/node_modules/
