@@ -2,9 +2,10 @@
 
 # Python
 __pycache__/
-backend/venv/
-backend/app/*.pyc
-backend/alembic/*.pyc
+.venv/
+*.pyc
+.pytest_cache/
+.ruff_cache/
 
 # Node
 frontend/node_modules/
