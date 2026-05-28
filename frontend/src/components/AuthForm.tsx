@@ -35,9 +35,11 @@ export function AuthForm() {
             </form>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             {message && <p>{message}</p>}
-            <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-                {mode === 'login' ? "Don't have an account? Sign up here" : 'Already have an account? Log in here'}
-            </button>
+            <p>{mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+                    {mode === 'login' ? 'Sign up here' : 'Log in here'}
+                </button>
+            </p>
         </div>
     )
 }
