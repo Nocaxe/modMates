@@ -44,11 +44,11 @@ export function NUSMods() {
           placeholder="Search e.g. CS2040S"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          onKeyDown={(e) => {if (e.key === "Enter") void handleSearch()}}
         />
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleSearch}
+          onClick={() => {void handleSearch() }}
         >
           Search
         </button>
@@ -63,7 +63,7 @@ export function NUSMods() {
             <li
               key={m.moduleCode}
               className="bg-white border rounded p-3 cursor-pointer hover:bg-blue-50"
-              onClick={() => handleSelectModule(m.moduleCode)}
+              onClick={() => {void handleSelectModule(m.moduleCode)}}
             >
               <span className="font-mono font-semibold">{m.moduleCode}</span>
               <span className="ml-2 text-gray-600">{m.title}</span>
@@ -98,8 +98,8 @@ export function NUSMods() {
                   </tr>
                 </thead>
                 <tbody>
-                  {selected.semesterData[0].timetable.map((lesson, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
+                  {selected.semesterData[0].timetable.map((lesson) => (
+                      <tr key={`${lesson.lessonType}-${lesson.classNo}`}>
                       <td className="border p-2">{lesson.lessonType}</td>
                       <td className="border p-2">{lesson.classNo}</td>
                       <td className="border p-2">{lesson.day}</td>

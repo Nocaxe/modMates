@@ -31,7 +31,7 @@ export async function searchModules(query: string): Promise<ModuleSummary[]> {
   if (!response.ok) {
     throw new Error('Failed to search modules');
   }
-  return response.json();
+  return response.json() as Promise<ModuleSummary[]>;
 }
 
 export async function getModuleDetail(moduleCode: string): Promise<ModuleDetail> {
@@ -39,5 +39,5 @@ export async function getModuleDetail(moduleCode: string): Promise<ModuleDetail>
   if (!response.ok) {
     throw new Error('Failed to fetch module detail');
   }
-  return response.json();
+  return response.json() as Promise<ModuleDetail>;
 }

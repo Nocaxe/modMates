@@ -5,7 +5,7 @@ import { Header } from "./components/Header"
 
 
 function AppContent() {
-  const { session, loading } = useAuth()
+  const { session, loading } = useAuth() as { session: unknown, loading: boolean }
 
   if (loading) return <div>Loading...</div>
   if (!session) return <AuthForm/>
