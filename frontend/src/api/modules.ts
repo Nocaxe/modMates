@@ -22,3 +22,22 @@ export type ModuleDetail = {
     timetable: Lesson[]
   }[]
 }
+
+// fetch functions
+const API_BASE = 'http://localhost:8000'
+
+export async function searchModules(query: string): Promise<ModuleSummary[]> {
+  const response = await fetch(`${API_BASE}/modules/search?query=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error('Failed to search modules');
+  }
+  return response.json();
+}
+
+export async function getModuleDetail(moduleCode: string): Promise<ModuleDetail> {
+  const response = await fetch(`${API_BASE}/modules/${encodeURIComponent(moduleCode)}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch module detail');
+  }
+  return response.json();
+}
