@@ -6,13 +6,13 @@ from fastapi.security import HTTPAuthorizationCredentials
 from jose import jwt
 
 from app.auth import get_current_user
+from tests.conftest import TEST_PUBLIC_KEY
 
 TEST_PRIVATE_KEY="""-----BEGIN PRIVATE KEY-----
 MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgStCKiPlZthAAK3Yy
 DcIDx1mV6tNEdTbxmxkRRJiSoDOhRANCAARPU4/a8F6mY09wZtbcMWJuDJNDAdvR
 AghTjEd2S9keRqG4MuQboexdFt7bN6XNvlrrnn0CUZeslluH1z77ZTSv
 -----END PRIVATE KEY-----"""
-TEST_PUBLIC_KEY={'alg': 'ES256', 'kty': 'EC', 'crv': 'P-256', 'x': 'T1OP2vBepmNPcGbW3DFibgyTQwHb0QIIU4xHdkvZHkY', 'y': 'obgy5Buh7F0W3ts3pc2-WuuefQJRl6yWW4fXPvtlNK8'}
 
 # Helper functions to create test tokens and credentials
 def make_token(sub="test", email="test@example.com", expired=False, key=TEST_PRIVATE_KEY):
