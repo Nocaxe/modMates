@@ -26,17 +26,20 @@ export function AuthForm() {
     }
 
     return (
-        <div>
-            <h1>{mode === 'login' ? 'Log in' : 'Sign up'}</h1>
-            <form onSubmit={e => void handleSubmit(e)}>
-                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-                <button type="submit">{mode === 'login' ? 'Log in' : 'Sign up'}</button>
+        <div className="flex flex-col h-screen justify-center items-center">
+            <h1 className="text-2xl font-bold mb-4 text-white">{mode === 'login' ? 'Log in' : 'Sign up'}</h1>
+            <form onSubmit={e => void handleSubmit(e)} className="flex flex-col gap-2 w-64">
+                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="rounded px-1 py-1"/>
+                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded px-1 py-1"/>
+                <button type="submit" className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
+                    {mode === 'login' ? 'Log in' : 'Sign up'}
+                </button>
             </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {message && <p>{message}</p>}
-            <p>{mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+            {error && <p className="text-red-500">{error}</p>}
+            {message && <p className="text-green-500">{message}</p>}
+            <p className="text-gray-300">
+                {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-blue-500 hover:underline">
                     {mode === 'login' ? 'Sign up here' : 'Log in here'}
                 </button>
             </p>
