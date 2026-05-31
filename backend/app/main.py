@@ -34,6 +34,6 @@ def db_health_check(db: Session = Depends(get_db)):
         return {"status": "error", "details": str(e)}
 
 # Test endpoint for authentication
-@app.get("/me")
-def get_me(user: dict = Depends(get_current_user)):
+@app.get("/profile")
+def get_profile(user: dict = Depends(get_current_user)):
     return {"user_id": user["sub"], "email": user.get("email")}
