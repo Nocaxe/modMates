@@ -29,8 +29,8 @@ export function AuthForm() {
         <div className="flex flex-col h-screen justify-center items-center">
             <h1 className="text-2xl font-bold mb-4 text-white">{mode === 'login' ? 'Log in' : 'Sign up'}</h1>
             <form onSubmit={e => void handleSubmit(e)} className="flex flex-col gap-2 w-64">
-                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="rounded px-1 py-1"/>
-                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded px-1 py-1"/>
+                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
+                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
                 <button type="submit" className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
                     {mode === 'login' ? 'Log in' : 'Sign up'}
                 </button>

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
 from app.config import settings
+from app.routers import modules
 from .auth import get_current_user
 
 app = FastAPI(title="modMates API")
@@ -19,6 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(modules.router)
 
 @app.get("/health")
 def health_check():
