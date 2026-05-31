@@ -28,7 +28,7 @@ export function AuthForm() {
     return (
         <div>
             <h1>{mode === 'login' ? 'Log in' : 'Sign up'}</h1>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={e => void handleSubmit(e)}>
                 <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
                 <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
                 <button type="submit">{mode === 'login' ? 'Log in' : 'Sign up'}</button>

@@ -11,7 +11,7 @@ function AppContent() {
   return (
     <div>
       <p>Logged in as {session.user.email}</p>
-      <button onClick={signOut}>Sign out</button>
+      <button onClick={() => void signOut()}>Sign out</button>
       {/* TODO: rest of the app here */}
     </div>
   )
