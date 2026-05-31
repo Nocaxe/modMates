@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
 from app.config import settings
+from .auth import get_current_user
 
 app = FastAPI(title="modMates API")
 
@@ -31,3 +32,8 @@ def db_health_check(db: Session = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         return {"status": "error", "details": str(e)}
+
+# Test endpoint for authentication
+@app.get("/me")
+def get_me(user: dict = Depends(get_current_user)):
+    return {"user_id": user["sub"], "email": user.get("email")}
