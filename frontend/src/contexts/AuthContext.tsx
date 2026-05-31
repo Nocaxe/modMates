@@ -1,14 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, use, useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 interface AuthContextType {
-  session: Session | null
-  user: User | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
+    session: Session | null
+    user: User | null
+    loading: boolean
+    signIn: (email: string, password: string) => Promise<void>
+    signUp: (email: string, password: string) => Promise<void>
+    signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         // Check if existing session exists
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        void supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session)
             setLoading(false)
         })
@@ -48,19 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{
+        <AuthContext value={{
             session,
             user: session?.user ?? null,
             loading,
             signIn, signUp, signOut
         }}>
             {children}
-        </AuthContext.Provider>
+        </AuthContext>
     )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
-    const context = useContext(AuthContext)
+    const context = use(AuthContext)
     if (!context) throw new Error('useAuth must be used within AuthProvider')
     return context
 }
