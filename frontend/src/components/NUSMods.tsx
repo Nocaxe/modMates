@@ -8,6 +8,7 @@ export function NUSMods() {
   const [selected, setSelected] = useState<ModuleDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   async function handleSearch() {
     setLoading(true);
     setError(null);
@@ -34,6 +35,7 @@ export function NUSMods() {
       setLoading(false);
     }
   }
+  
   return (
     <div className="min-h-screen p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-white">modMates – Module Search</h1>
