@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext"
 import LandingPage from './Pages/LandingPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
 import ProfilePage from './Pages/ProfilePage.tsx'
+import ProtectedRoute from './components/ProtectedRoute.tsx'
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: 'optimiser', element: <OptimiserPage /> },
-      { path: 'profile', element: <ProfilePage /> }
+      { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> }
     ]
   }
 ])
