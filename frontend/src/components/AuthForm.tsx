@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
-export function AuthForm() {
+interface AuthFormProps {
+  onSuccess: () => void
+}
+
+export function AuthForm({ onSuccess }: AuthFormProps) {
     const [mode, setMode] = useState<'login' | 'signup'>('login')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -16,6 +20,7 @@ export function AuthForm() {
         try {
             if (mode === 'login') {
                 await signIn(email, password)
+                onSuccess()
             } else {
                 await signUp(email, password)
                 setMessage('Check your email to verify your account')
