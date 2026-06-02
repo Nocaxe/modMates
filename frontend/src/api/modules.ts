@@ -24,7 +24,7 @@ export type ModuleDetail = {
 }
 
 // fetch functions
-const API_BASE = 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL as string
 
 export async function searchModules(query: string): Promise<ModuleSummary[]> {
   const response = await fetch(`${API_BASE}/modules/search?query=${encodeURIComponent(query)}`);
