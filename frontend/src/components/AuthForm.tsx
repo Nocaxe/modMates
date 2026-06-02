@@ -11,12 +11,14 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [message, setMessage] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
     const { signIn, signUp } = useAuth()
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault() // prevent refresh
         setError(null)
         setMessage(null)
+        setLoading(true)
         try {
             if (mode === 'login') {
                 await signIn(email, password)
@@ -27,6 +29,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Something went wrong')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -36,8 +40,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             <form onSubmit={e => void handleSubmit(e)} className="flex flex-col gap-2 w-64">
                 <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
                 <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
-                <button type="submit" className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
-                    {mode === 'login' ? 'Log in' : 'Sign up'}
+                <button type="submit" disabled={loading} className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
+                    {loading ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Sign up'}
                 </button>
             </form>
             {error && <p className="text-red-500">{error}</p>}
