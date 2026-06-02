@@ -7,17 +7,17 @@ export function Header() {
 
     if (!session) return null
 
-    function onSignOut() {
-        void signOut()
+    async function onSignOut() {
+        await signOut()
         void navigate('/')
     }
 
     return (
         <div className="flex flex-row gap-4 justify-center bg-gray-800 p-4 rounded">
-        <p className="text-white py-2">Logged in as {session.user.email}</p>
-        <button onClick={onSignOut} className="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-600">
-            Sign out
-        </button>
+            <p className="text-white py-2">Logged in as {session.user.email}</p>
+            <button onClick={() => void onSignOut()} className="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-600">
+                Sign out
+            </button>
         </div>
     )
 }
