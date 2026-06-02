@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 interface AuthFormProps {
@@ -13,6 +14,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     const [message, setMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const { signIn, signUp } = useAuth()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault() // prevent refresh
@@ -34,6 +37,11 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         }
     }
 
+    function handleContinueAsGuest() {
+        const destination = (location.state as { from?: Location })?.from?.pathname ?? '/optimiser'
+        void navigate(destination)
+    }
+
     return (
         <div className="flex flex-col h-screen justify-center items-center">
             <h1 className="text-2xl font-bold mb-4 text-white">{mode === 'login' ? 'Log in' : 'Sign up'}</h1>
@@ -50,6 +58,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                 {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
                 <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-blue-500 hover:underline">
                     {mode === 'login' ? 'Sign up here' : 'Log in here'}
+                </button>
+            </p>
+            <p className="text-gray-300">
+                or
+                <button onClick={handleContinueAsGuest} className="text-blue-500 hover:underline ml-1">
+                    Continue as guest
                 </button>
             </p>
         </div>
