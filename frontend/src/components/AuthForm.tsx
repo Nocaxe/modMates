@@ -1,28 +1,45 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
-export function AuthForm() {
+interface AuthFormProps {
+  onSuccess: () => void
+}
+
+export function AuthForm({ onSuccess }: AuthFormProps) {
     const [mode, setMode] = useState<'login' | 'signup'>('login')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [message, setMessage] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
     const { signIn, signUp } = useAuth()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault() // prevent refresh
         setError(null)
         setMessage(null)
+        setLoading(true)
         try {
             if (mode === 'login') {
                 await signIn(email, password)
+                onSuccess()
             } else {
                 await signUp(email, password)
                 setMessage('Check your email to verify your account')
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Something went wrong')
+        } finally {
+            setLoading(false)
         }
+    }
+
+    function handleContinueAsGuest() {
+        const destination = (location.state as { from?: Location })?.from?.pathname ?? '/optimiser'
+        void navigate(destination)
     }
 
     return (
@@ -31,8 +48,8 @@ export function AuthForm() {
             <form onSubmit={e => void handleSubmit(e)} className="flex flex-col gap-2 w-64">
                 <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
                 <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded px-1 py-1 bg-white"/>
-                <button type="submit" className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
-                    {mode === 'login' ? 'Log in' : 'Sign up'}
+                <button type="submit" disabled={loading} className="bg-green-800 text-white py-2 rounded hover:bg-green-600">
+                    {loading ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Sign up'}
                 </button>
             </form>
             {error && <p className="text-red-500">{error}</p>}
@@ -41,6 +58,12 @@ export function AuthForm() {
                 {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
                 <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-blue-500 hover:underline">
                     {mode === 'login' ? 'Sign up here' : 'Log in here'}
+                </button>
+            </p>
+            <p className="text-gray-300">
+                or
+                <button onClick={handleContinueAsGuest} className="text-blue-500 hover:underline ml-1">
+                    Continue as guest
                 </button>
             </p>
         </div>

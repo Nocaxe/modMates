@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, it, expect } from 'vitest'
 import { AuthForm } from '../../components/AuthForm'
+import { MemoryRouter } from 'react-router-dom'
 
 const {mockSignIn, mockSignUp} = vi.hoisted(() => ({
     mockSignIn: vi.fn(),
@@ -16,13 +17,13 @@ vi.mock('../../contexts/AuthContext', () => ({
 }))
 
 it('renders login form by default', () => {
-    render(<AuthForm />)
+    render(<MemoryRouter><AuthForm onSuccess={() => {}} /></MemoryRouter>)
     expect(screen.getByRole('heading')).toHaveTextContent('Log in')
     expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
 })
 
 it('switches to signup form', async () => {
-    render(<AuthForm />)
+    render(<MemoryRouter><AuthForm onSuccess={() => {}} /></MemoryRouter>)
     await userEvent.click(screen.getByRole('button', { name: 'Sign up here' }))
     expect(screen.getByRole('heading')).toHaveTextContent('Sign up')
     expect(screen.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
@@ -31,7 +32,7 @@ it('switches to signup form', async () => {
 
 it('calls signIn with email and password on login button click', async () => {
     mockSignIn.mockResolvedValue(undefined)
-    render(<AuthForm />)
+    render(<MemoryRouter><AuthForm onSuccess={() => {}} /></MemoryRouter>)
     await userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com')
     await userEvent.type(screen.getByPlaceholderText('Password'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -40,7 +41,7 @@ it('calls signIn with email and password on login button click', async () => {
 
 it('shows error message when signIn fails', async () => {
     mockSignIn.mockRejectedValue(new Error('Invalid login credentials'))
-    render(<AuthForm />)
+    render(<MemoryRouter><AuthForm onSuccess={() => {}} /></MemoryRouter>)
     await userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com')
     await userEvent.type(screen.getByPlaceholderText('Password'), 'password')
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -49,7 +50,7 @@ it('shows error message when signIn fails', async () => {
 
 it('shows verification message after signup', async () => {
     mockSignUp.mockResolvedValue(undefined)
-    render(<AuthForm />)
+    render(<MemoryRouter><AuthForm onSuccess={() => {}} /></MemoryRouter>)
     await userEvent.click(screen.getByText('Sign up here'))
     await userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com')
     await userEvent.type(screen.getByPlaceholderText('Password'), 'password')
