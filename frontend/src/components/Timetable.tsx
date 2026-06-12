@@ -247,4 +247,71 @@ export default function TimetableUI() {
         }));
         setActiveKey(null);
     }
+
+    // Get all selected and alternative blocks for a given day
+    function getDayBlocks(day: string) {
+        type SelectedBlock = {
+            type: "selected";
+            slot: Slot;
+            mod: Module;
+            lessonType: string;
+            key: string;
+            isActive: boolean;
+            isLocked: boolean;
+            isDimmed: boolean;
+        };
+
+        type AlternativeBlock = {
+            type: "alternative";
+            slot: Slot;
+            mod: Module;
+            lessonType: string;
+            key: string;
+        };
+
+        const selectedBlocks: SelectedBlock[] = [];
+        const alternativeBlocks: AlternativeBlock[] = [];
+
+        MODULES.forEach(mod => {
+            Object.entries(mod.lessons).forEach(([lessonType, data]) => {
+                const key = slotKey(mod.code, lessonType);
+                const selectedClassNo = selection[mod.code][lessonType];
+                const isActive = activeKey === key;
+                const isLocked = locked.has(key);
+                const isDimmed = activeKey !== null && !isActive;
+
+                const selectedSlot = data.slots.find(
+                    s => s.classNo === selectedClassNo && s.day === day
+                );
+                if (selectedSlot) {
+                    selectedBlocks.push({
+                        type: "selected",
+                        slot: selectedSlot,
+                        mod: mod,
+                        lessonType: lessonType,
+                        key: key,
+                        isActive: isActive,
+                        isLocked: isLocked,
+                        isDimmed: isDimmed
+                    });
+                }
+
+                if (isActive) {
+                    data.slots
+                        .filter(s => s.day === day && s.classNo !== selectedClassNo)
+                        .forEach(slot => {
+                            alternativeBlocks.push({
+                                type: "alternative",
+                                slot: slot,
+                                mod: mod,
+                                lessonType: lessonType,
+                                key: key,
+                            })
+                        });
+                }
+            });
+        });
+
+        return { selectedBlocks, alternativeBlocks };
+    }
 }
