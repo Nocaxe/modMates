@@ -208,4 +208,43 @@ export default function TimetableUI() {
         });
         return initial;
     });
+
+    // slot that is selected for moving
+    const [activeKey, setActiveKey] = useState<string | null>(null);
+
+    const [activeCode, activeLessonType] = activeKey ? activeKey.split("|") : [null, null];
+
+    const [locked, setLocked] = useState<Set<string>>(new Set());
+
+    // When user clicks a slot, set it as active for moving (or unselect if already active)
+    function handleSlotClick(code: string, lessonType: string, e: React.MouseEvent) {
+        e.stopPropagation();
+        const key = slotKey(code, lessonType);
+        setActiveKey(prev => prev === key ? null : key);
+    }
+
+    // When user clicks the lock icon, toggle lock state
+    function handleLockClick(code: string, lessonType: string, e: React.MouseEvent) {
+        e.stopPropagation();
+        const key = slotKey(code, lessonType);
+        setLocked(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    }
+
+    // When user clicks an alternative slot, move the active slot there
+    function handleAlternativeClick(code: string, lessonType: string, classNo: string, e: React.MouseEvent) {
+        e.stopPropagation();
+        setSelection(prev => ({
+            ...prev,
+            [code]: { ...prev[code], [lessonType]: classNo },
+        }));
+        setActiveKey(null);
+    }
 }
