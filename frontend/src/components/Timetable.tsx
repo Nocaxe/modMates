@@ -66,6 +66,116 @@ function slotKey(code: string, lessonType: string) {
     return `${code}|${lessonType}`;
 }
 
+// DUMMY DATA
+// TODO: REMOVE ONCE API IS INTEGRATED
+const hm = (hour: number, min = 0): number => hour * 60 + min;
+
+const MODULES: Module[] = [
+  {
+    code: "CS2103T",
+    title: "Software Engineering",
+    lessons: {
+      Lecture: {
+        default: "L1",
+        slots: [{ classNo: "L1", day: "Friday", start: hm(14), end: hm(16), venue: "i3 Aud" }],
+      },
+      Tutorial: {
+        default: "T08",
+        slots: [
+          { classNo: "T08", day: "Wednesday", start: hm(10), end: hm(11), venue: "COM1-0210" },
+          { classNo: "T09", day: "Wednesday", start: hm(11), end: hm(12), venue: "COM1-0210" },
+          { classNo: "T10", day: "Thursday", start: hm(10), end: hm(11), venue: "COM1-0208" },
+          { classNo: "T11", day: "Thursday", start: hm(14), end: hm(15), venue: "COM1-0208" },
+          { classNo: "T12", day: "Friday", start: hm(10), end: hm(11), venue: "COM1-0206" },
+        ],
+      },
+    },
+  },
+  {
+    code: "CS2040S",
+    title: "Data Structures & Algorithms",
+    lessons: {
+      Lecture: {
+        default: "L1",
+        slots: [{ classNo: "L1", day: "Tuesday", start: hm(10), end: hm(12), venue: "LT27" }],
+      },
+      Tutorial: {
+        default: "B01",
+        slots: [
+          { classNo: "B01", day: "Wednesday", start: hm(14), end: hm(15), venue: "COM1-0208" },
+          { classNo: "B02", day: "Wednesday", start: hm(15), end: hm(16), venue: "COM1-0208" },
+          { classNo: "B03", day: "Thursday", start: hm(9), end: hm(10), venue: "COM1-0206" },
+          { classNo: "B04", day: "Friday", start: hm(9), end: hm(10), venue: "COM1-0206" },
+          { classNo: "B05", day: "Friday", start: hm(11), end: hm(12), venue: "COM1-0210" },
+        ],
+      },
+      Laboratory: {
+        default: "V01",
+        slots: [
+          { classNo: "V01", day: "Thursday", start: hm(14), end: hm(16), venue: "COM1-B108" },
+          { classNo: "V02", day: "Thursday", start: hm(16), end: hm(18), venue: "COM1-B108" },
+          { classNo: "V03", day: "Friday", start: hm(14), end: hm(16), venue: "COM1-B112" },
+        ],
+      },
+    },
+  },
+  {
+    code: "CS2101",
+    title: "Effective Communication",
+    lessons: {
+      "Sectional Teaching": {
+        default: "G01",
+        slots: [
+          { classNo: "G01", day: "Tuesday", start: hm(14), end: hm(16), venue: "AS6-0333" },
+          { classNo: "G02", day: "Tuesday", start: hm(16), end: hm(18), venue: "AS6-0333" },
+          { classNo: "G03", day: "Wednesday", start: hm(16), end: hm(18), venue: "AS6-0208" },
+          { classNo: "G04", day: "Thursday", start: hm(14), end: hm(16), venue: "AS6-0208" },
+        ],
+      },
+    },
+  },
+  {
+    code: "MA2001",
+    title: "Linear Algebra I",
+    lessons: {
+      Lecture: {
+        default: "L1",
+        slots: [{ classNo: "L1", day: "Monday", start: hm(10), end: hm(12), venue: "LT31" }],
+      },
+      Tutorial: {
+        default: "T01",
+        slots: [
+          { classNo: "T01", day: "Monday", start: hm(14), end: hm(15), venue: "S17-0304" },
+          { classNo: "T02", day: "Monday", start: hm(15), end: hm(16), venue: "S17-0304" },
+          { classNo: "T03", day: "Tuesday", start: hm(9), end: hm(10), venue: "S17-0302" },
+          { classNo: "T04", day: "Wednesday", start: hm(9), end: hm(10), venue: "S17-0302" },
+          { classNo: "T05", day: "Friday", start: hm(9), end: hm(10), venue: "S17-0304" },
+        ],
+      },
+    },
+  },
+  {
+    code: "CS3230",
+    title: "Design & Analysis of Algorithms",
+    lessons: {
+      Lecture: {
+        default: "L1",
+        slots: [{ classNo: "L1", day: "Monday", start: hm(16), end: hm(18), venue: "LT19" }],
+      },
+      Tutorial: {
+        default: "T01",
+        slots: [
+          { classNo: "T01", day: "Tuesday", start: hm(9), end: hm(10), venue: "COM1-0210" },
+          { classNo: "T02", day: "Wednesday", start: hm(9), end: hm(10), venue: "COM1-0210" },
+          { classNo: "T03", day: "Thursday", start: hm(9), end: hm(10), venue: "COM1-0208" },
+          { classNo: "T04", day: "Friday", start: hm(13), end: hm(14), venue: "COM1-0206" },
+        ],
+      },
+    },
+  },
+];
+// END OF DUMMY DATA
+
 function LockIcon({ locked }: { locked: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5 shrink-0">
