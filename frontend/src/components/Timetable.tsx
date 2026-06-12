@@ -68,8 +68,10 @@ const MODULE_COLOURS: ModuleColour[] = [
   { bg: "#EEEDFE", border: "#7F77DD", text: "#26215C", accent: "#534AB7" }, // purple
   { bg: "#E1F5EE", border: "#1D9E75", text: "#04342C", accent: "#0F6E56" }, // teal
   { bg: "#FAEEDA", border: "#BA7517", text: "#412402", accent: "#854F0B" }, // amber
-  { bg: "#FBEAF0", border: "#D4537E", text: "#4B1528", accent: "#993556" }, // pink
-  { bg: "#E6F1FB", border: "#378ADD", text: "#042C53", accent: "#185FA5" }, // blue
+  { bg: "#fbeaf0", border: "#D4537E", text: "#4B1528", accent: "#993556" }, // pink
+  { bg: "#E6F1FB", border: "#3487db", text: "#042C53", accent: "#185FA5" }, // blue
+  { bg: "#fbe6e6", border: "#db3434", text: "#530404", accent: "#a51818" }, // red
+  { bg: "#fbfae6", border: "#dbd034", text: "#535204", accent: "#a59c18" }, // yellow
 ];
 
 // Helper functions
