@@ -327,15 +327,15 @@ export default function TimetableUI() {
     return (
         <div className="p-4 select-none ml-4 mr-4" onClick={() => setActiveKey(null)}>
             {/* Timetable grid */}
-            <div className="border border-slate-200 bg-white overflow-hidden">
-                 {/* Hour headers */}
-                 <div className="flex border-b border-slate-100">
-                    <div className="w-11 shrink-0 border-r border-slate-100" />
+            <div className="border-b border-slate-200 overflow-hidden">
+                {/* Hour headers */}
+                <div className="flex">
+                    <div className="w-11 shrink-0" />
                     <div className="flex-1 relative h-7">
                         {hours.map((hour) => (
                         <div
                             key={hour}
-                            className="absolute top-1.5 text-md font-mono text-slate-500 -translate-x-1/2 pointer-events-none whitespace-nowrap"
+                            className="absolute top-1.5 text-[17px] font-mono text-white -translate-x-1/2 pointer-events-none whitespace-nowrap"
                             style={{ left: `${timeToPercent(hour * 60)}%` }}
                         >
                             {String(hour).padStart(2, "0")}:00
@@ -354,7 +354,7 @@ export default function TimetableUI() {
                     : 1;
                 return (
                     <div key={day} className="flex border-b border-slate-100 Last:border-0">
-                        <div className="w-11 shrink-0 flex items-center justify-center text-sm font-medium text-slate-400 uppercase border-r border-l border-slate-100">
+                        <div className="w-11 shrink-0 flex items-center justify-center text-sm font-medium text-white uppercase border-r border-l border-slate-100">
                             {DAY_ABBR[dayIdx]}
                         </div>
                         <div className="flex-1 relative" style={{ height: numLanes * LANE_HEIGHT }}>
