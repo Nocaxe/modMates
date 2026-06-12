@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface Slot {
     classNo: string;
     day: string;
@@ -24,7 +26,7 @@ interface ModuleColour {
     accent: string;
 }
 
-type SelectionState = Record<string, Record<string, LessonGroup>>;
+type SelectionState = Record<string, Record<string, string>>;
 
 // Constants
 const START_HOUR = 8;
@@ -194,3 +196,16 @@ function LockIcon({ locked }: { locked: boolean }) {
   );
 }
 
+export default function TimetableUI() {
+    // Set initial selection
+    const [selection, setSelection] = useState<SelectionState>(() => {
+        const initial: SelectionState = {};
+        MODULES.forEach(mod => {
+            initial[mod.code] = {};
+            Object.entries(mod.lessons).forEach(([lessonType, data]) => {
+                initial[mod.code][lessonType] = data.default;
+            });
+        });
+        return initial;
+    });
+}
