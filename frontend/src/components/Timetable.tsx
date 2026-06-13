@@ -53,6 +53,8 @@ const START_HOUR = 8;
 const END_HOUR = 20;
 const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60;
 const LANE_HEIGHT = 64; // px — matches h-16
+const MIN_HOUR_WIDTH = 100;
+const MIN_TIMETABLE_WIDTH = MIN_HOUR_WIDTH * (END_HOUR - START_HOUR) + 44; 
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const DAY_ABBR = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -110,17 +112,17 @@ const MODULES: Module[] = [
     title: "Software Engineering",
     lessons: {
       Lecture: {
-        default: "L1",
-        slots: [{ classNo: "L1", day: "Friday", start: hm(14), end: hm(16), venue: "i3 Aud" }],
+        default: "1",
+        slots: [{ classNo: "1", day: "Friday", start: hm(14), end: hm(16), venue: "I3-AUD" }],
       },
       Tutorial: {
-        default: "T08",
+        default: "01",
         slots: [
-          { classNo: "T08", day: "Wednesday", start: hm(10), end: hm(11), venue: "COM1-0210" },
-          { classNo: "T09", day: "Wednesday", start: hm(11), end: hm(12), venue: "COM1-0210" },
-          { classNo: "T10", day: "Thursday", start: hm(10), end: hm(11), venue: "COM1-0208" },
-          { classNo: "T11", day: "Thursday", start: hm(14), end: hm(15), venue: "COM1-0208" },
-          { classNo: "T12", day: "Friday", start: hm(10), end: hm(11), venue: "COM1-0206" },
+          { classNo: "01", day: "Wednesday", start: hm(10), end: hm(11), venue: "COM1-0207" },
+          { classNo: "02", day: "Wednesday", start: hm(11), end: hm(12), venue: "COM1-0207" },
+          { classNo: "03", day: "Thursday",  start: hm(10), end: hm(11), venue: "COM1-0208" },
+          { classNo: "04", day: "Thursday",  start: hm(14), end: hm(15), venue: "COM1-0208" },
+          { classNo: "05", day: "Friday",    start: hm(10), end: hm(11), venue: "COM1-0206" },
         ],
       },
     },
@@ -130,25 +132,32 @@ const MODULES: Module[] = [
     title: "Data Structures & Algorithms",
     lessons: {
       Lecture: {
-        default: "L1",
-        slots: [{ classNo: "L1", day: "Tuesday", start: hm(10), end: hm(12), venue: "LT27" }],
+        // Group "1" has two sessions (Tue + Wed); group "2" has two sessions (Mon + Wed).
+        // Students pick one group and attend all its sessions.
+        default: "1",
+        slots: [
+          { classNo: "1", day: "Tuesday",   start: hm(10), end: hm(12), venue: "LT27" },
+          { classNo: "1", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0217" },
+          { classNo: "2", day: "Monday",    start: hm(10), end: hm(12), venue: "LT27" },
+          { classNo: "2", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0217" },
+        ],
       },
       Tutorial: {
-        default: "B01",
+        default: "01",
         slots: [
-          { classNo: "B01", day: "Wednesday", start: hm(14), end: hm(15), venue: "COM1-0208" },
-          { classNo: "B02", day: "Wednesday", start: hm(15), end: hm(16), venue: "COM1-0208" },
-          { classNo: "B03", day: "Thursday", start: hm(9), end: hm(10), venue: "COM1-0206" },
-          { classNo: "B04", day: "Friday", start: hm(9), end: hm(10), venue: "COM1-0206" },
-          { classNo: "B05", day: "Friday", start: hm(11), end: hm(12), venue: "COM1-0210" },
+          { classNo: "01", day: "Wednesday", start: hm(14), end: hm(15), venue: "COM1-0208" },
+          { classNo: "02", day: "Wednesday", start: hm(15), end: hm(16), venue: "COM1-0208" },
+          { classNo: "03", day: "Thursday",  start: hm(9),  end: hm(10), venue: "COM1-0206" },
+          { classNo: "04", day: "Friday",    start: hm(9),  end: hm(10), venue: "COM1-0206" },
+          { classNo: "05", day: "Friday",    start: hm(11), end: hm(12), venue: "COM1-0210" },
         ],
       },
       Laboratory: {
-        default: "V01",
+        default: "01",
         slots: [
-          { classNo: "V01", day: "Thursday", start: hm(14), end: hm(16), venue: "COM1-B108" },
-          { classNo: "V02", day: "Thursday", start: hm(16), end: hm(18), venue: "COM1-B108" },
-          { classNo: "V03", day: "Friday", start: hm(14), end: hm(16), venue: "COM1-B112" },
+          { classNo: "01", day: "Thursday", start: hm(14), end: hm(16), venue: "COM1-B108" },
+          { classNo: "02", day: "Thursday", start: hm(16), end: hm(18), venue: "COM1-B108" },
+          { classNo: "03", day: "Friday",   start: hm(14), end: hm(16), venue: "COM1-B112" },
         ],
       },
     },
@@ -158,12 +167,12 @@ const MODULES: Module[] = [
     title: "Effective Communication",
     lessons: {
       "Sectional Teaching": {
-        default: "G01",
+        default: "01",
         slots: [
-          { classNo: "G01", day: "Tuesday", start: hm(14), end: hm(16), venue: "AS6-0333" },
-          { classNo: "G02", day: "Tuesday", start: hm(16), end: hm(18), venue: "AS6-0333" },
-          { classNo: "G03", day: "Wednesday", start: hm(16), end: hm(18), venue: "AS6-0208" },
-          { classNo: "G04", day: "Thursday", start: hm(14), end: hm(16), venue: "AS6-0208" },
+          { classNo: "01", day: "Tuesday",   start: hm(14), end: hm(16), venue: "AS6-0333" },
+          { classNo: "02", day: "Tuesday",   start: hm(16), end: hm(18), venue: "AS6-0333" },
+          { classNo: "03", day: "Wednesday", start: hm(16), end: hm(18), venue: "AS6-0208" },
+          { classNo: "04", day: "Thursday",  start: hm(14), end: hm(16), venue: "AS6-0208" },
         ],
       },
     },
@@ -173,17 +182,17 @@ const MODULES: Module[] = [
     title: "Linear Algebra I",
     lessons: {
       Lecture: {
-        default: "L1",
-        slots: [{ classNo: "L1", day: "Monday", start: hm(10), end: hm(12), venue: "LT31" }],
+        default: "1",
+        slots: [{ classNo: "1", day: "Monday", start: hm(10), end: hm(12), venue: "LT31" }],
       },
       Tutorial: {
-        default: "T01",
+        default: "01",
         slots: [
-          { classNo: "T01", day: "Monday", start: hm(14), end: hm(15), venue: "S17-0304" },
-          { classNo: "T02", day: "Monday", start: hm(15), end: hm(16), venue: "S17-0304" },
-          { classNo: "T03", day: "Tuesday", start: hm(9), end: hm(10), venue: "S17-0302" },
-          { classNo: "T04", day: "Wednesday", start: hm(9), end: hm(10), venue: "S17-0302" },
-          { classNo: "T05", day: "Friday", start: hm(9), end: hm(10), venue: "S17-0304" },
+          { classNo: "01", day: "Monday",    start: hm(14), end: hm(15), venue: "S17-0304" },
+          { classNo: "02", day: "Monday",    start: hm(15), end: hm(16), venue: "S17-0304" },
+          { classNo: "03", day: "Tuesday",   start: hm(9),  end: hm(10), venue: "S17-0302" },
+          { classNo: "04", day: "Wednesday", start: hm(9),  end: hm(10), venue: "S17-0302" },
+          { classNo: "05", day: "Friday",    start: hm(9),  end: hm(10), venue: "S17-0304" },
         ],
       },
     },
@@ -193,16 +202,16 @@ const MODULES: Module[] = [
     title: "Design & Analysis of Algorithms",
     lessons: {
       Lecture: {
-        default: "L1",
-        slots: [{ classNo: "L1", day: "Monday", start: hm(16), end: hm(18), venue: "LT19" }],
+        default: "1",
+        slots: [{ classNo: "1", day: "Monday", start: hm(16), end: hm(18), venue: "LT19" }],
       },
       Tutorial: {
-        default: "T01",
+        default: "01",
         slots: [
-          { classNo: "T01", day: "Tuesday", start: hm(9), end: hm(10), venue: "COM1-0210" },
-          { classNo: "T02", day: "Wednesday", start: hm(9), end: hm(10), venue: "COM1-0210" },
-          { classNo: "T03", day: "Thursday", start: hm(9), end: hm(10), venue: "COM1-0208" },
-          { classNo: "T04", day: "Friday", start: hm(13), end: hm(14), venue: "COM1-0206" },
+          { classNo: "01", day: "Tuesday",   start: hm(9),  end: hm(10), venue: "COM1-0210" },
+          { classNo: "02", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0210" },
+          { classNo: "03", day: "Thursday",  start: hm(9),  end: hm(10), venue: "COM1-0208" },
+          { classNo: "04", day: "Friday",    start: hm(13), end: hm(14), venue: "COM1-0206" },
         ],
       },
     },
@@ -212,7 +221,7 @@ const MODULES: Module[] = [
 
 function LockIcon({ locked }: { locked: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0">
       {locked ? (
         <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
       ) : (
@@ -327,7 +336,8 @@ export default function TimetableUI() {
     const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
 
     return (
-        <div className="p-4 select-none ml-4 mr-4" onClick={() => setActiveKey(null)}>
+        <div className="p-4 select-none ml-4 mr-4 overflow-x-auto" onClick={() => setActiveKey(null)}>
+        <div style={{ minWidth: MIN_TIMETABLE_WIDTH }}>
             {/* Timetable grid */}
             <div className="border-b border-slate-200 overflow-hidden">
                 {/* Hour headers */}
@@ -408,7 +418,7 @@ export default function TimetableUI() {
                                     >
                                         <div className="flex items-center justify-between gap-1">
                                             <span
-                                                className="text-[14px] font-medium truncate"
+                                                className="text-[13px] font-medium truncate"
                                                 style={{ color: colour.text }}
                                             >
                                                 {mod.code}
@@ -437,6 +447,7 @@ export default function TimetableUI() {
                     </div>
                 )
             })}
+        </div>
         </div>
     );
 }
