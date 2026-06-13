@@ -9,7 +9,6 @@ interface Slot {
 }
 
 interface LessonGroup {
-    default: string;
     slots: Slot[];
 }
 
@@ -112,11 +111,9 @@ const MODULES: Module[] = [
     title: "Software Engineering",
     lessons: {
       Lecture: {
-        default: "1",
         slots: [{ classNo: "1", day: "Friday", start: hm(14), end: hm(16), venue: "I3-AUD" }],
       },
       Tutorial: {
-        default: "01",
         slots: [
           { classNo: "01", day: "Wednesday", start: hm(10), end: hm(11), venue: "COM1-0207" },
           { classNo: "02", day: "Wednesday", start: hm(11), end: hm(12), venue: "COM1-0207" },
@@ -134,7 +131,6 @@ const MODULES: Module[] = [
       Lecture: {
         // Group "1" has two sessions (Tue + Wed); group "2" has two sessions (Mon + Wed).
         // Students pick one group and attend all its sessions.
-        default: "1",
         slots: [
           { classNo: "1", day: "Tuesday",   start: hm(10), end: hm(12), venue: "LT27" },
           { classNo: "1", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0217" },
@@ -143,7 +139,6 @@ const MODULES: Module[] = [
         ],
       },
       Tutorial: {
-        default: "01",
         slots: [
           { classNo: "01", day: "Wednesday", start: hm(14), end: hm(15), venue: "COM1-0208" },
           { classNo: "02", day: "Wednesday", start: hm(15), end: hm(16), venue: "COM1-0208" },
@@ -153,7 +148,6 @@ const MODULES: Module[] = [
         ],
       },
       Laboratory: {
-        default: "01",
         slots: [
           { classNo: "01", day: "Thursday", start: hm(14), end: hm(16), venue: "COM1-B108" },
           { classNo: "02", day: "Thursday", start: hm(16), end: hm(18), venue: "COM1-B108" },
@@ -167,7 +161,6 @@ const MODULES: Module[] = [
     title: "Effective Communication",
     lessons: {
       "Sectional Teaching": {
-        default: "01",
         slots: [
           { classNo: "01", day: "Tuesday",   start: hm(14), end: hm(16), venue: "AS6-0333" },
           { classNo: "02", day: "Tuesday",   start: hm(16), end: hm(18), venue: "AS6-0333" },
@@ -182,11 +175,9 @@ const MODULES: Module[] = [
     title: "Linear Algebra I",
     lessons: {
       Lecture: {
-        default: "1",
         slots: [{ classNo: "1", day: "Monday", start: hm(10), end: hm(12), venue: "LT31" }],
       },
       Tutorial: {
-        default: "01",
         slots: [
           { classNo: "01", day: "Monday",    start: hm(14), end: hm(15), venue: "S17-0304" },
           { classNo: "02", day: "Monday",    start: hm(15), end: hm(16), venue: "S17-0304" },
@@ -202,11 +193,9 @@ const MODULES: Module[] = [
     title: "Design & Analysis of Algorithms",
     lessons: {
       Lecture: {
-        default: "1",
         slots: [{ classNo: "1", day: "Monday", start: hm(16), end: hm(18), venue: "LT19" }],
       },
       Tutorial: {
-        default: "01",
         slots: [
           { classNo: "01", day: "Tuesday",   start: hm(9),  end: hm(10), venue: "COM1-0210" },
           { classNo: "02", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0210" },
@@ -244,7 +233,7 @@ export default function TimetableUI() {
         MODULES.forEach(mod => {
             initial[mod.code] = {};
             Object.entries(mod.lessons).forEach(([lessonType, data]) => {
-                initial[mod.code][lessonType] = data.default;
+                initial[mod.code][lessonType] = data.slots[0].classNo;
             });
         });
         return initial;
