@@ -1,48 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  getTimetable,
+  saveTimetable,
+  type TimetableData,
+} from "../api/timetable";
 
 interface Slot {
-    classNo: string;
-    day: string;
-    start: number; // minutes from midnight
-    end: number; // minutes from midnight
-    venue: string;
+  classNo: string;
+  day: string;
+  start: number; // minutes from midnight
+  end: number; // minutes from midnight
+  venue: string;
 }
 
 interface LessonGroup {
-    slots: Slot[];
+  slots: Slot[];
 }
 
 interface Module {
-    code: string;
-    title: string;
-    lessons: Record<string, LessonGroup>; // Lesson type, lesson group
+  code: string;
+  title: string;
+  lessons: Record<string, LessonGroup>; // Lesson type, lesson group
 }
 
 interface ModuleColour {
-    bg: string;
-    border: string;
-    text: string;
-    accent: string;
+  bg: string;
+  border: string;
+  text: string;
+  accent: string;
 }
 
 type SelectionState = Record<string, Record<string, string>>;
 
 type SelectedBlock = {
-    type: "selected";
-    slot: Slot;
-    mod: Module;
-    lessonType: string;
-    key: string;
-    isActive: boolean;
-    isLocked: boolean;
+  type: "selected";
+  slot: Slot;
+  mod: Module;
+  lessonType: string;
+  key: string;
+  isActive: boolean;
+  isLocked: boolean;
 };
 
 type AlternativeBlock = {
-    type: "alternative";
-    slot: Slot;
-    mod: Module;
-    lessonType: string;
-    key: string;
+  type: "alternative";
+  slot: Slot;
+  mod: Module;
+  lessonType: string;
+  key: string;
 };
 
 type Block = SelectedBlock | AlternativeBlock;
@@ -52,17 +58,17 @@ const START_HOUR = 8;
 const END_HOUR = 20;
 const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60;
 const LANE_HEIGHT = 64; // px — matches h-16
-const MIN_HOUR_WIDTH = 100;
-const MIN_TIMETABLE_WIDTH = MIN_HOUR_WIDTH * (END_HOUR - START_HOUR) + 44; 
+const MIN_HOUR_WIDTH = 120;
+const MIN_TIMETABLE_WIDTH = MIN_HOUR_WIDTH * (END_HOUR - START_HOUR) + 44;
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const DAY_ABBR = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 const LESSON_ABBR: Record<string, string> = {
-    "Lecture": "LEC",
-    "Tutorial": "TUT",
-    "Laboratory": "LAB",
-    "Sectional Teaching": "SEC",
+  Lecture: "LEC",
+  Tutorial: "TUT",
+  Laboratory: "LAB",
+  "Sectional Teaching": "SEC",
 };
 
 const MODULE_COLOURS: ModuleColour[] = [
@@ -77,28 +83,28 @@ const MODULE_COLOURS: ModuleColour[] = [
 
 // Helper functions
 function timeToPercent(minutes: number): number {
-    // Maps a time to a percentage of the timetable width
-    return ((minutes - START_HOUR * 60) / TOTAL_MINUTES) * 100;
+  // Maps a time to a percentage of the timetable width
+  return ((minutes - START_HOUR * 60) / TOTAL_MINUTES) * 100;
 }
 
 function assignLanes(blocks: Block[]): Array<{ block: Block; lane: number }> {
-    const sorted = [...blocks].sort((a, b) => a.slot.start - b.slot.start);
-    const laneEnds: number[] = [];
-    return sorted.map(block => {
-        let lane = laneEnds.findIndex(end => end <= block.slot.start);
-        if (lane === -1) {
-            lane = laneEnds.length;
-            laneEnds.push(block.slot.end);
-        } else {
-            laneEnds[lane] = block.slot.end;
-        }
-        return { block, lane };
-    });
+  const sorted = [...blocks].sort((a, b) => a.slot.start - b.slot.start);
+  const laneEnds: number[] = [];
+  return sorted.map((block) => {
+    let lane = laneEnds.findIndex((end) => end <= block.slot.start);
+    if (lane === -1) {
+      lane = laneEnds.length;
+      laneEnds.push(block.slot.end);
+    } else {
+      laneEnds[lane] = block.slot.end;
+    }
+    return { block, lane };
+  });
 }
 
 function slotKey(code: string, lessonType: string) {
-    // returns a unique key for a class and lesson type
-    return `${code}|${lessonType}`;
+  // returns a unique key for a class and lesson type
+  return `${code}|${lessonType}`;
 }
 
 // DUMMY DATA
@@ -111,15 +117,53 @@ const MODULES: Module[] = [
     title: "Software Engineering",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Friday", start: hm(14), end: hm(16), venue: "I3-AUD" }],
+        slots: [
+          {
+            classNo: "1",
+            day: "Friday",
+            start: hm(14),
+            end: hm(16),
+            venue: "I3-AUD",
+          },
+        ],
       },
       Tutorial: {
         slots: [
-          { classNo: "01", day: "Wednesday", start: hm(10), end: hm(11), venue: "COM1-0207" },
-          { classNo: "02", day: "Wednesday", start: hm(11), end: hm(12), venue: "COM1-0207" },
-          { classNo: "03", day: "Thursday",  start: hm(10), end: hm(11), venue: "COM1-0208" },
-          { classNo: "04", day: "Thursday",  start: hm(14), end: hm(15), venue: "COM1-0208" },
-          { classNo: "05", day: "Friday",    start: hm(10), end: hm(11), venue: "COM1-0206" },
+          {
+            classNo: "01",
+            day: "Wednesday",
+            start: hm(10),
+            end: hm(11),
+            venue: "COM1-0207",
+          },
+          {
+            classNo: "02",
+            day: "Wednesday",
+            start: hm(11),
+            end: hm(12),
+            venue: "COM1-0207",
+          },
+          {
+            classNo: "03",
+            day: "Thursday",
+            start: hm(10),
+            end: hm(11),
+            venue: "COM1-0208",
+          },
+          {
+            classNo: "04",
+            day: "Thursday",
+            start: hm(14),
+            end: hm(15),
+            venue: "COM1-0208",
+          },
+          {
+            classNo: "05",
+            day: "Friday",
+            start: hm(10),
+            end: hm(11),
+            venue: "COM1-0206",
+          },
         ],
       },
     },
@@ -132,26 +176,98 @@ const MODULES: Module[] = [
         // Group "1" has two sessions (Tue + Wed); group "2" has two sessions (Mon + Wed).
         // Students pick one group and attend all its sessions.
         slots: [
-          { classNo: "1", day: "Tuesday",   start: hm(10), end: hm(12), venue: "LT27" },
-          { classNo: "1", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0217" },
-          { classNo: "2", day: "Monday",    start: hm(10), end: hm(12), venue: "LT27" },
-          { classNo: "2", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0217" },
+          {
+            classNo: "1",
+            day: "Tuesday",
+            start: hm(10),
+            end: hm(12),
+            venue: "LT27",
+          },
+          {
+            classNo: "1",
+            day: "Wednesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0217",
+          },
+          {
+            classNo: "2",
+            day: "Monday",
+            start: hm(10),
+            end: hm(12),
+            venue: "LT27",
+          },
+          {
+            classNo: "2",
+            day: "Wednesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0217",
+          },
         ],
       },
       Tutorial: {
         slots: [
-          { classNo: "01", day: "Wednesday", start: hm(14), end: hm(15), venue: "COM1-0208" },
-          { classNo: "02", day: "Wednesday", start: hm(15), end: hm(16), venue: "COM1-0208" },
-          { classNo: "03", day: "Thursday",  start: hm(9),  end: hm(10), venue: "COM1-0206" },
-          { classNo: "04", day: "Friday",    start: hm(9),  end: hm(10), venue: "COM1-0206" },
-          { classNo: "05", day: "Friday",    start: hm(11), end: hm(12), venue: "COM1-0210" },
+          {
+            classNo: "01",
+            day: "Wednesday",
+            start: hm(14),
+            end: hm(15),
+            venue: "COM1-0208",
+          },
+          {
+            classNo: "02",
+            day: "Wednesday",
+            start: hm(15),
+            end: hm(16),
+            venue: "COM1-0208",
+          },
+          {
+            classNo: "03",
+            day: "Thursday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0206",
+          },
+          {
+            classNo: "04",
+            day: "Friday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0206",
+          },
+          {
+            classNo: "05",
+            day: "Friday",
+            start: hm(11),
+            end: hm(12),
+            venue: "COM1-0210",
+          },
         ],
       },
       Laboratory: {
         slots: [
-          { classNo: "01", day: "Thursday", start: hm(14), end: hm(16), venue: "COM1-B108" },
-          { classNo: "02", day: "Thursday", start: hm(16), end: hm(18), venue: "COM1-B108" },
-          { classNo: "03", day: "Friday",   start: hm(14), end: hm(16), venue: "COM1-B112" },
+          {
+            classNo: "01",
+            day: "Thursday",
+            start: hm(14),
+            end: hm(16),
+            venue: "COM1-B108",
+          },
+          {
+            classNo: "02",
+            day: "Thursday",
+            start: hm(16),
+            end: hm(18),
+            venue: "COM1-B108",
+          },
+          {
+            classNo: "03",
+            day: "Friday",
+            start: hm(14),
+            end: hm(16),
+            venue: "COM1-B112",
+          },
         ],
       },
     },
@@ -162,10 +278,34 @@ const MODULES: Module[] = [
     lessons: {
       "Sectional Teaching": {
         slots: [
-          { classNo: "01", day: "Tuesday",   start: hm(14), end: hm(16), venue: "AS6-0333" },
-          { classNo: "02", day: "Tuesday",   start: hm(16), end: hm(18), venue: "AS6-0333" },
-          { classNo: "03", day: "Wednesday", start: hm(16), end: hm(18), venue: "AS6-0208" },
-          { classNo: "04", day: "Thursday",  start: hm(14), end: hm(16), venue: "AS6-0208" },
+          {
+            classNo: "01",
+            day: "Tuesday",
+            start: hm(14),
+            end: hm(16),
+            venue: "AS6-0333",
+          },
+          {
+            classNo: "02",
+            day: "Tuesday",
+            start: hm(16),
+            end: hm(18),
+            venue: "AS6-0333",
+          },
+          {
+            classNo: "03",
+            day: "Wednesday",
+            start: hm(16),
+            end: hm(18),
+            venue: "AS6-0208",
+          },
+          {
+            classNo: "04",
+            day: "Thursday",
+            start: hm(14),
+            end: hm(16),
+            venue: "AS6-0208",
+          },
         ],
       },
     },
@@ -175,15 +315,53 @@ const MODULES: Module[] = [
     title: "Linear Algebra I",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Monday", start: hm(10), end: hm(12), venue: "LT31" }],
+        slots: [
+          {
+            classNo: "1",
+            day: "Monday",
+            start: hm(10),
+            end: hm(12),
+            venue: "LT31",
+          },
+        ],
       },
       Tutorial: {
         slots: [
-          { classNo: "01", day: "Monday",    start: hm(14), end: hm(15), venue: "S17-0304" },
-          { classNo: "02", day: "Monday",    start: hm(15), end: hm(16), venue: "S17-0304" },
-          { classNo: "03", day: "Tuesday",   start: hm(9),  end: hm(10), venue: "S17-0302" },
-          { classNo: "04", day: "Wednesday", start: hm(9),  end: hm(10), venue: "S17-0302" },
-          { classNo: "05", day: "Friday",    start: hm(9),  end: hm(10), venue: "S17-0304" },
+          {
+            classNo: "01",
+            day: "Monday",
+            start: hm(14),
+            end: hm(15),
+            venue: "S17-0304",
+          },
+          {
+            classNo: "02",
+            day: "Monday",
+            start: hm(15),
+            end: hm(16),
+            venue: "S17-0304",
+          },
+          {
+            classNo: "03",
+            day: "Tuesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "S17-0302",
+          },
+          {
+            classNo: "04",
+            day: "Wednesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "S17-0302",
+          },
+          {
+            classNo: "05",
+            day: "Friday",
+            start: hm(9),
+            end: hm(10),
+            venue: "S17-0304",
+          },
         ],
       },
     },
@@ -193,14 +371,46 @@ const MODULES: Module[] = [
     title: "Design & Analysis of Algorithms",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Monday", start: hm(16), end: hm(18), venue: "LT19" }],
+        slots: [
+          {
+            classNo: "1",
+            day: "Monday",
+            start: hm(16),
+            end: hm(18),
+            venue: "LT19",
+          },
+        ],
       },
       Tutorial: {
         slots: [
-          { classNo: "01", day: "Tuesday",   start: hm(9),  end: hm(10), venue: "COM1-0210" },
-          { classNo: "02", day: "Wednesday", start: hm(9),  end: hm(10), venue: "COM1-0210" },
-          { classNo: "03", day: "Thursday",  start: hm(9),  end: hm(10), venue: "COM1-0208" },
-          { classNo: "04", day: "Friday",    start: hm(13), end: hm(14), venue: "COM1-0206" },
+          {
+            classNo: "01",
+            day: "Tuesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0210",
+          },
+          {
+            classNo: "02",
+            day: "Wednesday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0210",
+          },
+          {
+            classNo: "03",
+            day: "Thursday",
+            start: hm(9),
+            end: hm(10),
+            venue: "COM1-0208",
+          },
+          {
+            classNo: "04",
+            day: "Friday",
+            start: hm(13),
+            end: hm(14),
+            venue: "COM1-0206",
+          },
         ],
       },
     },
@@ -227,216 +437,303 @@ function LockIcon({ locked }: { locked: boolean }) {
 }
 
 export default function TimetableUI() {
-    // Set initial selection
-    const [selection, setSelection] = useState<SelectionState>(() => {
-        const initial: SelectionState = {};
-        MODULES.forEach(mod => {
-            initial[mod.code] = {};
-            Object.entries(mod.lessons).forEach(([lessonType, data]) => {
-                initial[mod.code][lessonType] = data.slots[0].classNo;
+  // Set initial selection
+  const { session } = useAuth();
+  const LS_KEY = "modmates-timetable";
+
+  const [selection, setSelection] = useState<SelectionState>(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(LS_KEY) ?? "null",
+      ) as TimetableData | null;
+      if (saved?.selection) return saved.selection;
+    } catch {
+      return {};
+    }
+
+    const initial: SelectionState = {};
+    MODULES.forEach((mod) => {
+      initial[mod.code] = {};
+      Object.entries(mod.lessons).forEach(([lessonType, data]) => {
+        initial[mod.code][lessonType] = data.slots[0].classNo;
+      });
+    });
+    return initial;
+  });
+
+  // slot that is selected for moving
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+
+  const [locked, setLocked] = useState<Set<string>>(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(LS_KEY) ?? "null",
+      ) as TimetableData | null;
+      if (Array.isArray(saved?.locked)) return new Set<string>(saved.locked);
+    } catch {
+      return new Set<string>();
+    }
+    return new Set<string>();
+  });
+
+  // On mount, load timetable data from API if available
+  useEffect(() => {
+    if (!session) return;
+    getTimetable(session.access_token)
+      .then((data) => {
+        if (Object.keys(data.selection).length > 0) {
+          setSelection(data.selection);
+          setLocked(new Set(data.locked));
+        }
+      })
+      .catch(() => {}); // Silently fail and use defaults if API call fails
+  }, [session]);
+
+  // On change, write localStorage immediately, sync to API with debounce
+  useEffect(() => {
+    const data: TimetableData = { selection, locked: [...locked] };
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    if (!session) return;
+    const timer = setTimeout(() => {
+      saveTimetable(session.access_token, data).catch(() => {}); // Silently fail if API call fails
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [selection, locked, session]);
+
+  // When user clicks a slot, set it as active for moving (or unselect if already active)
+  function handleSlotClick(
+    code: string,
+    lessonType: string,
+    e: React.MouseEvent,
+  ) {
+    e.stopPropagation();
+    const key = slotKey(code, lessonType);
+    setActiveKey((prev) => (prev === key ? null : key));
+  }
+
+  // When user clicks the lock icon, toggle lock state
+  function handleLockClick(
+    code: string,
+    lessonType: string,
+    e: React.MouseEvent,
+  ) {
+    e.stopPropagation();
+    const key = slotKey(code, lessonType);
+    setLocked((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  // When user clicks an alternative slot, move the active slot there
+  function handleAlternativeClick(
+    code: string,
+    lessonType: string,
+    classNo: string,
+    e: React.MouseEvent,
+  ) {
+    e.stopPropagation();
+    setSelection((prev) => ({
+      ...prev,
+      [code]: { ...prev[code], [lessonType]: classNo },
+    }));
+    setActiveKey(null);
+  }
+
+  // Get all selected and alternative blocks for a given day
+  function getDayBlocks(day: string): Block[] {
+    const selectedBlocks: SelectedBlock[] = [];
+    const alternativeBlocks: AlternativeBlock[] = [];
+
+    MODULES.forEach((mod) => {
+      Object.entries(mod.lessons).forEach(([lessonType, data]) => {
+        const key = slotKey(mod.code, lessonType);
+        const selectedClassNo = selection[mod.code][lessonType];
+        const isActive = activeKey === key;
+        const isLocked = locked.has(key);
+
+        const selectedSlot = data.slots.find(
+          (s) => s.classNo === selectedClassNo && s.day === day,
+        );
+        if (selectedSlot) {
+          selectedBlocks.push({
+            type: "selected",
+            slot: selectedSlot,
+            mod: mod,
+            lessonType: lessonType,
+            key: key,
+            isActive: isActive,
+            isLocked: isLocked,
+          });
+        }
+
+        if (isActive) {
+          data.slots
+            .filter((s) => s.day === day && s.classNo !== selectedClassNo)
+            .forEach((slot) => {
+              alternativeBlocks.push({
+                type: "alternative",
+                slot: slot,
+                mod: mod,
+                lessonType: lessonType,
+                key: key,
+              });
             });
-        });
-        return initial;
+        }
+      });
     });
 
-    // slot that is selected for moving
-    const [activeKey, setActiveKey] = useState<string | null>(null);
+    return [...selectedBlocks, ...alternativeBlocks];
+  }
 
-    const [locked, setLocked] = useState<Set<string>>(() => new Set());
+  const hours = Array.from(
+    { length: END_HOUR - START_HOUR + 1 },
+    (_, i) => START_HOUR + i,
+  );
 
-    // When user clicks a slot, set it as active for moving (or unselect if already active)
-    function handleSlotClick(code: string, lessonType: string, e: React.MouseEvent) {
-        e.stopPropagation();
-        const key = slotKey(code, lessonType);
-        setActiveKey(prev => prev === key ? null : key);
-    }
-
-    // When user clicks the lock icon, toggle lock state
-    function handleLockClick(code: string, lessonType: string, e: React.MouseEvent) {
-        e.stopPropagation();
-        const key = slotKey(code, lessonType);
-        setLocked(prev => {
-            const next = new Set(prev);
-            if (next.has(key)) {
-                next.delete(key);
-            } else {
-                next.add(key);
-            }
-            return next;
-        });
-    }
-
-    // When user clicks an alternative slot, move the active slot there
-    function handleAlternativeClick(code: string, lessonType: string, classNo: string, e: React.MouseEvent) {
-        e.stopPropagation();
-        setSelection(prev => ({
-            ...prev,
-            [code]: { ...prev[code], [lessonType]: classNo },
-        }));
-        setActiveKey(null);
-    }
-
-    // Get all selected and alternative blocks for a given day
-    function getDayBlocks(day: string): Block[] {
-      const selectedBlocks: SelectedBlock[] = [];
-      const alternativeBlocks: AlternativeBlock[] = [];
-
-        MODULES.forEach(mod => {
-            Object.entries(mod.lessons).forEach(([lessonType, data]) => {
-                const key = slotKey(mod.code, lessonType);
-                const selectedClassNo = selection[mod.code][lessonType];
-                const isActive = activeKey === key;
-                const isLocked = locked.has(key);
-
-                const selectedSlot = data.slots.find(
-                    s => s.classNo === selectedClassNo && s.day === day
-                );
-                if (selectedSlot) {
-                    selectedBlocks.push({
-                        type: "selected",
-                        slot: selectedSlot,
-                        mod: mod,
-                        lessonType: lessonType,
-                        key: key,
-                        isActive: isActive,
-                        isLocked: isLocked,
-                    });
-                }
-
-                if (isActive) {
-                    data.slots
-                        .filter(s => s.day === day && s.classNo !== selectedClassNo)
-                        .forEach(slot => {
-                            alternativeBlocks.push({
-                                type: "alternative",
-                                slot: slot,
-                                mod: mod,
-                                lessonType: lessonType,
-                                key: key,
-                            })
-                        });
-                }
-            });
-        });
-
-        return [...selectedBlocks, ...alternativeBlocks];
-    }
-
-    const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
-
-    return (
-        <div className="p-4 select-none ml-4 mr-4 overflow-x-auto" onClick={() => setActiveKey(null)}>
-        <div style={{ minWidth: MIN_TIMETABLE_WIDTH }}>
-            {/* Timetable grid */}
-            <div className="border-b border-slate-200 overflow-hidden">
-                {/* Hour headers */}
-                <div className="flex">
-                    <div className="w-11 shrink-0" />
-                    <div className="flex-1 relative h-7">
-                        {hours.map((hour) => (
-                        <div
-                            key={hour}
-                            className="absolute top-1.5 text-[17px] font-mono text-white -translate-x-1/2 pointer-events-none whitespace-nowrap"
-                            style={{ left: `${timeToPercent(hour * 60)}%` }}
-                        >
-                            {String(hour).padStart(2, "0")}:00
-                        </div>
-                        ))}
-                    </div>
+  return (
+    <div
+      className="p-4 select-none ml-4 mr-4 overflow-x-auto"
+      onClick={() => setActiveKey(null)}
+    >
+      <div style={{ minWidth: MIN_TIMETABLE_WIDTH }}>
+        {/* Timetable grid */}
+        <div className="border-b border-slate-200 overflow-hidden">
+          {/* Hour headers */}
+          <div className="flex">
+            <div className="w-11 shrink-0" />
+            <div className="flex-1 relative h-7">
+              {hours.map((hour) => (
+                <div
+                  key={hour}
+                  className="absolute top-1.5 text-[17px] font-mono text-white -translate-x-1/2 pointer-events-none whitespace-nowrap"
+                  style={{ left: `${timeToPercent(hour * 60)}%` }}
+                >
+                  {String(hour).padStart(2, "0")}:00
                 </div>
+              ))}
             </div>
+          </div>
+        </div>
 
-            {/* Day rows */}
-            {DAYS.map((day, dayIdx) => {
-                const blocks = getDayBlocks(day);
-                const laneAssignments = assignLanes(blocks);
-                const numLanes = laneAssignments.length > 0
-                    ? Math.max(...laneAssignments.map(a => a.lane + 1))
-                    : 1;
-                return (
-                    <div key={day} className="flex border-b border-slate-100 Last:border-0">
-                        <div className="w-11 shrink-0 flex items-center justify-center text-sm font-medium text-white uppercase border-r border-l border-slate-100">
-                            {DAY_ABBR[dayIdx]}
-                        </div>
-                        <div className="flex-1 relative" style={{ height: numLanes * LANE_HEIGHT }}>
-                            {/* Vertical grid lines */}
-                            {hours.map((hour) => (
-                                <div
-                                    key={hour}
-                                    className="absolute top-0 bottom-0 w-px bg-slate-100 pointer-events-none"
-                                    style={{ left: `${timeToPercent(hour * 60)}%` }}
-                                />
-                            ))}
+        {/* Day rows */}
+        {DAYS.map((day, dayIdx) => {
+          const blocks = getDayBlocks(day);
+          const laneAssignments = assignLanes(blocks);
+          const numLanes =
+            laneAssignments.length > 0
+              ? Math.max(...laneAssignments.map((a) => a.lane + 1))
+              : 1;
+          return (
+            <div
+              key={day}
+              className="flex border-b border-slate-100 Last:border-0"
+            >
+              <div className="w-11 shrink-0 flex items-center justify-center text-sm font-medium text-white uppercase border-r border-l border-slate-100">
+                {DAY_ABBR[dayIdx]}
+              </div>
+              <div
+                className="flex-1 relative"
+                style={{ height: numLanes * LANE_HEIGHT }}
+              >
+                {/* Vertical grid lines */}
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className="absolute top-0 bottom-0 w-px bg-slate-100 pointer-events-none"
+                    style={{ left: `${timeToPercent(hour * 60)}%` }}
+                  />
+                ))}
 
-                            {/* Slot blocks */}
-                            {laneAssignments.map(({ block, lane }) => {
-                                const { slot, mod, lessonType } = block;
-                                const colourIndex = MODULES.findIndex(m => m.code === mod.code) % MODULE_COLOURS.length;
-                                const colour = MODULE_COLOURS[colourIndex];
-                                const leftPct = timeToPercent(slot.start);
-                                const widthPct = timeToPercent(slot.end) - leftPct;
-                                const isSelected = block.type === "selected";
-                                const isAlt = block.type === "alternative";
-                                const isActive = isSelected && block.isActive;
-                                const isLocked = isSelected && block.isLocked;
+                {/* Slot blocks */}
+                {laneAssignments.map(({ block, lane }) => {
+                  const { slot, mod, lessonType } = block;
+                  const colourIndex =
+                    MODULES.findIndex((m) => m.code === mod.code) %
+                    MODULE_COLOURS.length;
+                  const colour = MODULE_COLOURS[colourIndex];
+                  const leftPct = timeToPercent(slot.start);
+                  const widthPct = timeToPercent(slot.end) - leftPct;
+                  const isSelected = block.type === "selected";
+                  const isAlt = block.type === "alternative";
+                  const isActive = isSelected && block.isActive;
+                  const isLocked = isSelected && block.isLocked;
 
-                                return (
-                                    <div
-                                        key={`${block.key}-${slot.classNo}`}
-                                        className="absolute rounded-md cursor-pointer flex flex-col justify-center px-1.5 overflow-hidden transition-opacity duration-100"
-                                        style={{
-                                            top: lane * LANE_HEIGHT + 6,
-                                            height: LANE_HEIGHT - 12,
-                                            left: `calc(${leftPct}% + 2px)`,
-                                            width: `calc(${widthPct}% - 4px)`,
-                                            zIndex: isAlt ? 1 : isActive ? 3 : 2,
-                                            background: isAlt ? `${colour.bg}80` : colour.bg,
-                                            border: isAlt
-                                            ? `1.5px dashed ${colour.border}88`
-                                            : isActive
-                                            ? `1.5px solid ${colour.border}`
-                                            : `0.5px solid ${colour.border}55`,
-                                            outline: isActive ? `5px solid ${colour.accent}` : "none",
-                                            outlineOffset: "1px",
-                                        }}
-                                        onClick={(e) =>
-                                            isAlt
-                                            ? handleAlternativeClick(mod.code, lessonType, slot.classNo, e)
-                                            : handleSlotClick(mod.code, lessonType, e)
-                                        }
-                                    >
-                                        <div className="flex items-center justify-between gap-1">
-                                            <span
-                                                className="text-[13px] font-medium truncate"
-                                                style={{ color: colour.text }}
-                                            >
-                                                {mod.code}
-                                            </span>
-                                            {isSelected && (
-                                                <button
-                                                    className="flex items-center shrink-0 p-1 rounded bg-transparent border border-gray-300 cursor-pointer transition-opacity"
-                                                    style={{ color: colour.accent, opacity: isLocked ? 1 : 0.6 }}
-                                                    onClick={(e) => handleLockClick(mod.code, lessonType, e)}
-                                                    aria-label={isLocked ? "Unlock slot" : "Lock slot"}
-                                                >
-                                                    <LockIcon locked={isLocked} />
-                                                </button>
-                                            )}
-                                        </div>
-                                        <span
-                                            className="text-[11px] truncate"
-                                            style={{ color: colour.text }}
-                                        >
-                                            {LESSON_ABBR[lessonType] ?? lessonType} {slot.classNo} · {slot.venue}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                  return (
+                    <div
+                      key={`${block.key}-${slot.classNo}`}
+                      className="absolute rounded-md cursor-pointer flex flex-col justify-center px-1.5 overflow-hidden transition-opacity duration-100"
+                      style={{
+                        top: lane * LANE_HEIGHT + 6,
+                        height: LANE_HEIGHT - 12,
+                        left: `calc(${leftPct}% + 2px)`,
+                        width: `calc(${widthPct}% - 4px)`,
+                        zIndex: isAlt ? 1 : isActive ? 3 : 2,
+                        background: isAlt ? `${colour.bg}80` : colour.bg,
+                        border: isAlt
+                          ? `1.5px dashed ${colour.border}88`
+                          : isActive
+                            ? `1.5px solid ${colour.border}`
+                            : `0.5px solid ${colour.border}55`,
+                        outline: isActive
+                          ? `5px solid ${colour.accent}`
+                          : "none",
+                        outlineOffset: "1px",
+                      }}
+                      onClick={(e) =>
+                        isAlt
+                          ? handleAlternativeClick(
+                              mod.code,
+                              lessonType,
+                              slot.classNo,
+                              e,
+                            )
+                          : handleSlotClick(mod.code, lessonType, e)
+                      }
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span
+                          className="text-[13px] font-medium truncate"
+                          style={{ color: colour.text }}
+                        >
+                          {mod.code}
+                        </span>
+                        {isSelected && (
+                          <button
+                            className="flex items-center shrink-0 p-1 rounded bg-transparent border border-gray-300 cursor-pointer transition-opacity"
+                            style={{
+                              color: colour.accent,
+                              opacity: isLocked ? 1 : 0.6,
+                            }}
+                            onClick={(e) =>
+                              handleLockClick(mod.code, lessonType, e)
+                            }
+                            aria-label={isLocked ? "Unlock slot" : "Lock slot"}
+                          >
+                            <LockIcon locked={isLocked} />
+                          </button>
+                        )}
+                      </div>
+                      <span
+                        className="text-[11px] truncate"
+                        style={{ color: colour.text }}
+                      >
+                        {LESSON_ABBR[lessonType] ?? lessonType} {slot.classNo} ·{" "}
+                        {slot.venue}
+                      </span>
                     </div>
-                )
-            })}
-        </div>
-        </div>
-    );
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
