@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 interface AuthFormProps {
@@ -15,7 +15,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     const [loading, setLoading] = useState(false)
     const { signIn, signUp } = useAuth()
     const navigate = useNavigate()
-    const location = useLocation()
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault() // prevent refresh
@@ -38,7 +37,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     }
 
     function handleContinueAsGuest() {
-        const destination = (location.state as { from?: Location })?.from?.pathname ?? '/optimiser'
+        const destination = '/optimiser'
         void navigate(destination)
     }
 
