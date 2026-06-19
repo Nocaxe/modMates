@@ -6,7 +6,7 @@ import {
   type TimetableData,
 } from "../api/timetable";
 
-interface Slot {
+export interface Slot {
   classNo: string;
   day: string;
   start: number; // minutes from midnight
@@ -14,17 +14,17 @@ interface Slot {
   venue: string;
 }
 
-interface LessonGroup {
+export interface LessonGroup {
   slots: Slot[];
 }
 
-interface Module {
+export interface Module {
   code: string;
   title: string;
   lessons: Record<string, LessonGroup>; // Lesson type, lesson group
 }
 
-interface ModuleColour {
+export interface ModuleColour {
   bg: string;
   border: string;
   text: string;
@@ -111,7 +111,7 @@ function slotKey(code: string, lessonType: string) {
 // TODO: REMOVE ONCE API IS INTEGRATED
 const hm = (hour: number, min = 0): number => hour * 60 + min;
 
-const MODULES: Module[] = [
+export const DUMMY_MODULES: Module[] = [
   {
     code: "CS2103T",
     title: "Software Engineering",
@@ -436,7 +436,8 @@ function LockIcon({ locked }: { locked: boolean }) {
   );
 }
 
-export default function TimetableUI() {
+// accepts a module prop 
+export default function TimetableUI({modules = DUMMY_MODULES}: {modules?: Module[]}) {
   // Set initial selection
   const { session } = useAuth();
   const LS_KEY = "modmates-timetable";
@@ -452,7 +453,7 @@ export default function TimetableUI() {
     }
 
     const initial: SelectionState = {};
-    MODULES.forEach((mod) => {
+    modules.forEach((mod) => {
       initial[mod.code] = {};
       Object.entries(mod.lessons).forEach(([lessonType, data]) => {
         initial[mod.code][lessonType] = data.slots[0].classNo;
@@ -475,6 +476,26 @@ export default function TimetableUI() {
     }
     return new Set<string>();
   });
+
+  //When modules prop changes, initialise default slot selection for any newly added modules but do not overwrite existing selections
+  useEffect(() => {
+    setSelection((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      modules.forEach((mod) => {
+        if (!next[mod.code]) {
+          next[mod.code] = {};
+          Object.entries(mod.lessons).forEach(([lessonType, data]) => {
+            if (data.slots.length > 0) {
+              next[mod.code][lessonType] = data.slots[0].classNo;
+            }
+          });
+          changed = true;
+        }
+      });
+      return next;
+    });
+  }, [modules]);
 
   // On mount, load timetable data from API if available
   useEffect(() => {
@@ -550,7 +571,7 @@ export default function TimetableUI() {
     const selectedBlocks: SelectedBlock[] = [];
     const alternativeBlocks: AlternativeBlock[] = [];
 
-    MODULES.forEach((mod) => {
+    modules.forEach((mod) => {
       Object.entries(mod.lessons).forEach(([lessonType, data]) => {
         const key = slotKey(mod.code, lessonType);
         const selectedClassNo = selection[mod.code][lessonType];
@@ -654,7 +675,7 @@ export default function TimetableUI() {
                 {laneAssignments.map(({ block, lane }) => {
                   const { slot, mod, lessonType } = block;
                   const colourIndex =
-                    MODULES.findIndex((m) => m.code === mod.code) %
+                    modules.findIndex((m) => m.code === mod.code) %
                     MODULE_COLOURS.length;
                   const colour = MODULE_COLOURS[colourIndex];
                   const leftPct = timeToPercent(slot.start);
