@@ -1,3 +1,5 @@
+import type { Module, Slot} from "../components/Timetable";
+
 export type ModuleSummary = {
   moduleCode: string
   title: string
@@ -40,4 +42,32 @@ export async function getModuleDetail(moduleCode: string): Promise<ModuleDetail>
     throw new Error('Failed to fetch module detail');
   }
   return response.json() as Promise<ModuleDetail>;
+}
+
+// helper function to convert NUSMods time strings to minutes
+function parseTime(time: string): number {
+  return parseInt(time.slice(0, 2)) * 60 + parseInt(time.slice(2, 4));
+}
+
+// helps to bridge the 2 data shapes, from what the API returns me(ModuleDetail)
+// to the timetable format (which expects a module)
+export function moduleDetailToModule(detail: ModuleDetail): Module {
+  const lessons: Record<string, { slots: Slot[] }> = {};
+  for (const lesson of detail.semesterData[0]?.timetable ?? []) {
+    if (!lessons[lesson.lessonType]) {
+      lessons[lesson.lessonType] = { slots: [] };
+    }
+    lessons[lesson.lessonType].slots.push({
+      classNo: lesson.classNo,
+      day: lesson.day,
+      start: parseTime(lesson.startTime),
+      end: parseTime(lesson.endTime),
+      venue: lesson.venue,
+    });
+  }
+  return {
+    code: detail.moduleCode,
+    title: detail.title,
+    lessons,
+  };
 }
