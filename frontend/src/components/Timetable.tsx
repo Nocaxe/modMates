@@ -111,7 +111,7 @@ function slotKey(code: string, lessonType: string) {
 // TODO: REMOVE ONCE API IS INTEGRATED
 const hm = (hour: number, min = 0): number => hour * 60 + min;
 
-export const DUMMY_MODULES: Module[] = [
+const DUMMY_MODULES: Module[] = [
   {
     code: "CS2103T",
     title: "Software Engineering",
@@ -477,26 +477,7 @@ export default function TimetableUI({modules = DUMMY_MODULES}: {modules?: Module
     return new Set<string>();
   });
 
-  //When modules prop changes, initialise default slot selection for any newly added modules but do not overwrite existing selections
-  useEffect(() => {
-    setSelection((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      modules.forEach((mod) => {
-        if (!next[mod.code]) {
-          next[mod.code] = {};
-          Object.entries(mod.lessons).forEach(([lessonType, data]) => {
-            if (data.slots.length > 0) {
-              next[mod.code][lessonType] = data.slots[0].classNo;
-            }
-          });
-          changed = true;
-        }
-      });
-      return next;
-    });
-  }, [modules]);
-
+  
   // On mount, load timetable data from API if available
   useEffect(() => {
     if (!session) return;
