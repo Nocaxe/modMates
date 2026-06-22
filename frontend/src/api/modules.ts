@@ -21,6 +21,8 @@ export type ModuleDetail = {
   description: string
   semesterData: {
     semester: number
+    examDate: string | null
+    examDuration: number | null
     timetable: Lesson[]
   }[]
 }
