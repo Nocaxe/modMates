@@ -1,6 +1,12 @@
-export type Day = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+export type Day =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday";
 
-export type ConstraintKind = 'hard' | 'soft';
+export type ConstraintKind = "hard" | "soft";
 
 export interface BaseConstraint {
   id: string;
@@ -8,42 +14,42 @@ export interface BaseConstraint {
 }
 
 export interface EarliestStartConstraint extends BaseConstraint {
-  type: 'earliest_start';
+  type: "earliest_start";
   time: string;
 }
 
 export interface LatestEndConstraint extends BaseConstraint {
-  type: 'latest_end';
+  type: "latest_end";
   time: string;
 }
 
 export interface FreeDaysCountConstraint extends BaseConstraint {
-  type: 'free_days_count';
+  type: "free_days_count";
   count: number;
 }
 
 export interface SpecificFreeDaysConstraint extends BaseConstraint {
-  type: 'specific_free_days';
+  type: "specific_free_days";
   days: Day[];
 }
 
 export interface BlockedSlotConstraint extends BaseConstraint {
-  type: 'blocked_slot';
+  type: "blocked_slot";
   day: Day;
   startTime: string;
   endTime: string;
 }
 
 export interface LunchBreakConstraint extends BaseConstraint {
-  type: 'lunch_break';
+  type: "lunch_break";
   startTime: string;
-  endTime: string;  
-  duration: number; 
+  endTime: string;
+  duration: number;
 }
 
 export interface MaxConsecutiveConstraint extends BaseConstraint {
-  type: 'max_consecutive';
-  hours: number; 
+  type: "max_consecutive";
+  hours: number;
 }
 
 export type Constraint =
@@ -55,4 +61,8 @@ export type Constraint =
   | LunchBreakConstraint
   | MaxConsecutiveConstraint;
 
-export type ConstraintType = Constraint['type'];
+export type ConstraintType = Constraint["type"];
+
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never;
