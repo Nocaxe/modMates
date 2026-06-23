@@ -1,13 +1,16 @@
 import { useState} from "react"
 import { ModuleSearchDropdown } from "../components/ModuleSearchDropdown"
 import type { Module } from "../components/Timetable"
-import { useState } from "react";
 import TimetableUI from "../components/Timetable";
 import { BottomPanel } from "../components/BottomPanel";
 
 export default function OptimiserPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_constraintPayload, setConstraintPayload] = useState<object[]>([]);
+    const [modules, setModules] = useState<Module[]>([]);
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_constraintPayload, setConstraintPayload] = useState<object[]>([]);
+
+
+ 
 
   // TODO: Replace sel and locked with actual data
   //   async function handleOptimise() {
@@ -27,13 +30,22 @@ export default function OptimiserPage() {
   //     });
   //   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <TimetableUI />
-      {/* <button onClick={handleOptimise} className="mt-4 w-full bg-white">
+    function handleAddModule(module: Module) {
+        setModules((prev) => [...prev, module]);
+    }   
+
+    return (
+      <div className="flex flex-col gap-4">
+
+            <TimetableUI modules={modules} />
+            <ModuleSearchDropdown 
+                onAddModule={handleAddModule} 
+                addedModuleCodes={new Set(modules.map(m => m.code))} />
+            {/* <button onClick={handleOptimise} className="mt-4 w-full bg-white">
         Optimise
       </button> */}
-      <BottomPanel onConstraintsChange={setConstraintPayload} />
-    </div>
-  );
+            <BottomPanel onConstraintsChange={setConstraintPayload} />
+   
+      </div>
+    )
 }
