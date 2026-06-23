@@ -1,10 +1,4 @@
-export type Day =
-  | "Monday"
-  | "Tuesday"
-  | "Wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday";
+export type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday";
 
 export type ConstraintKind = "hard" | "soft";
 
