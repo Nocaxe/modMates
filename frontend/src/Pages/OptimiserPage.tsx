@@ -1,5 +1,4 @@
 import { useState} from "react"
-import { ModuleSearchDropdown } from "../components/ModuleSearchDropdown"
 import type { Module } from "../components/Timetable"
 import TimetableUI from "../components/Timetable";
 import { BottomPanel } from "../components/BottomPanel";
@@ -36,16 +35,15 @@ export default function OptimiserPage() {
 
     return (
       <div className="flex flex-col gap-4">
-
-            <TimetableUI modules={modules} />
-            <ModuleSearchDropdown 
-                onAddModule={handleAddModule} 
-                addedModuleCodes={new Set(modules.map(m => m.code))} />
+        <TimetableUI modules={modules} />
             {/* <button onClick={handleOptimise} className="mt-4 w-full bg-white">
         Optimise
       </button> */}
-            <BottomPanel onConstraintsChange={setConstraintPayload} />
-   
+        <BottomPanel 
+          onConstraintsChange={setConstraintPayload} 
+          onAddModule={handleAddModule} 
+          addedModuleCodes={new Set(modules.map((m) => m.code))} 
+        />
       </div>
     )
 }

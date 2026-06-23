@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ConstraintPanel } from "./constraints/ConstraintPanel";
-import { NUSMods } from "./NUSMods";
+import { ModuleSearchDropdown } from "./ModuleSearchDropdown";
+import type { Module } from "./Timetable";
 
 type Tab = "modules" | "constraints";
 
@@ -12,9 +13,11 @@ const TABS: { id: Tab; label: string }[] = [
 interface Props {
   // Pass through whatever props your ModuleSearch already takes
   onConstraintsChange?: (payload: object[]) => void;
+  onAddModule: (module: Module) => void;
+  addedModuleCodes: Set<string>;
 }
 
-export function BottomPanel({ onConstraintsChange }: Props) {
+export function BottomPanel({ onConstraintsChange, onAddModule, addedModuleCodes }: Props) {
   const [active, setActive] = useState<Tab>("modules");
 
   return (
@@ -46,7 +49,12 @@ export function BottomPanel({ onConstraintsChange }: Props) {
 
       {/* Content */}
       <div className="p-4 max-h-96 overflow-y-auto">
-        {active === "modules" && <NUSMods />}
+        {active === "modules" && (
+          <ModuleSearchDropdown 
+            onAddModule={onAddModule} 
+            addedModuleCodes={addedModuleCodes} 
+          />
+        )}
         {active === "constraints" && (
           <ConstraintPanel onChange={onConstraintsChange} />
         )}
