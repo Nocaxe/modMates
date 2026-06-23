@@ -1,3 +1,6 @@
+import { useState} from "react"
+import { ModuleSearchDropdown } from "../components/ModuleSearchDropdown"
+import type { Module } from "../components/Timetable"
 import { useState } from "react";
 import TimetableUI from "../components/Timetable";
 import { BottomPanel } from "../components/BottomPanel";
