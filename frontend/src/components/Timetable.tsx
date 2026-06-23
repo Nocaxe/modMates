@@ -555,7 +555,7 @@ export default function TimetableUI({modules = DUMMY_MODULES}: {modules?: Module
     modules.forEach((mod) => {
       Object.entries(mod.lessons).forEach(([lessonType, data]) => {
         const key = slotKey(mod.code, lessonType);
-        const selectedClassNo = selection[mod.code][lessonType];
+        const selectedClassNo = selection[mod.code]?.[lessonType] ?? data.slots[0].classNo; // fallback to first slot if not selected
         const isActive = activeKey === key;
         const isLocked = locked.has(key);
 
