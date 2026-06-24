@@ -6,6 +6,7 @@ import { SpecificFreeDaysConfig } from "./configs/SpecificFreeDaysConfig";
 import { BlockedSlotConfig } from "./configs/BlockedSlotConfig";
 import { LunchBreakConfig } from "./configs/LunchBreakConfig";
 import { MaxConsecutiveConfig } from "./configs/MaxConsecutiveConfig";
+import { WeightSlider } from "./WeightSlider";
 
 // Labels for each type
 const META: Record<Constraint["type"], { label: string }> = {
@@ -73,7 +74,7 @@ export function ConstraintRow({
         </div>
       </div>
 
-      {/* Config area — rendered based on discriminated type */}
+      {/* Config area */}
       <div className="pl-6">
         {constraint.type === "earliest_start" && (
           <EarliestStartConfig c={constraint} onChange={onUpdate} />
@@ -97,6 +98,16 @@ export function ConstraintRow({
           <MaxConsecutiveConfig c={constraint} onChange={onUpdate} />
         )}
       </div>
+
+      {/* Weight Slider */}
+      {constraint.kind === "soft" && (
+        <div className="pl-6 transition-all duration-150">
+          <WeightSlider
+            value={constraint.weight}
+            onChange={(w) => onUpdate({ weight: w })}
+          />
+        </div>
+      )}
     </div>
   );
 }

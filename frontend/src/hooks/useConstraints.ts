@@ -12,7 +12,7 @@ function uid(): string {
 
 const DEFAULTS: Record<
   ConstraintType,
-  DistributiveOmit<Constraint, "id" | "kind">
+  DistributiveOmit<Constraint, "id" | "kind" | "weight">
 > = {
   earliest_start: { type: "earliest_start", time: "0900" },
   latest_end: { type: "latest_end", time: "1800" },
@@ -38,7 +38,7 @@ export function useConstraints() {
 
   const add = useCallback(
     (type: ConstraintType, kind: ConstraintKind = "soft") => {
-      const c = { ...DEFAULTS[type], id: uid(), kind };
+      const c = { ...DEFAULTS[type], id: uid(), kind, weight: 3 };
       setConstraints((prev) => [...prev, c]);
     },
     [],

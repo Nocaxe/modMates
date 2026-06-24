@@ -5,6 +5,7 @@ export type ConstraintKind = "hard" | "soft";
 export interface BaseConstraint {
   id: string;
   kind: ConstraintKind;
+  weight: number;
 }
 
 export interface EarliestStartConstraint extends BaseConstraint {
