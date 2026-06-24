@@ -21,14 +21,16 @@ interface Props {
     addedModuleCodes: Set<string>;
 }
 
+
 export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<ModuleSummary[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [moduleDetailsCache, setModuleDetailsCache] = useState<Record<string, ModuleDetail>>({}); //store already fetched module details
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [moduleDetails, setModuleDetails] = useState<Record<string, ModuleDetail>>({});
+
 
 
     // close dropdown when clicking outside
@@ -52,7 +54,6 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         if (val.trim().length < 2) {
             setResults([]);
             setIsOpen(false);
-            setModuleDetailsCache({});
             return;
         }
         setLoading(true);
@@ -62,14 +63,15 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
               const top = data.slice(0, MAX_RESULTS);
               setResults(top);
               setIsOpen(top.length > 0);
-              setModuleDetailsCache({}); //clear cache on new search
               // fetch details for all results so exam dates and description load
-              top.forEach((summary) => {
-                getModuleDetail(summary.moduleCode)
-                  .then((detail) => {
-                    setModuleDetailsCache((prev) => ({ ...prev, [summary.moduleCode]: detail }));
-                  })
-                  .catch(() => {});
+              top.forEach((m) => {
+                if (!moduleDetails[m.moduleCode]) {
+                  getModuleDetail(m.moduleCode)
+                    .then((detail) => {
+                      setModuleDetails((prev) => ({ ...prev, [m.moduleCode]: detail }));
+                    })
+                    .catch(() => {});
+                }
               }); 
             })
             .catch(() => setError("Failed to search modules"))
@@ -84,8 +86,9 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         }
                 
         // check cache first
-        if (moduleDetailsCache[summary.moduleCode]) {
-            onAddModule(moduleDetailToModule(moduleDetailsCache[summary.moduleCode]));
+        const cached = moduleDetails[summary.moduleCode];
+        if (cached) {
+            onAddModule(moduleDetailToModule(cached));
             setIsOpen(false);
             return;
         }
@@ -94,7 +97,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         setLoading(true);
         getModuleDetail(summary.moduleCode)
             .then((detail) => {
-                setModuleDetailsCache((prev) => ({ ...prev, [summary.moduleCode]: detail }));   
+                setModuleDetails((prev) => ({ ...prev, [summary.moduleCode]: detail }));
                 onAddModule(moduleDetailToModule(detail));
                 setIsOpen(false);
             })                          
@@ -126,7 +129,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         <ul className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg overflow-hidden">
           {results.map((m) => {
             const isAdded = addedModuleCodes.has(m.moduleCode);
-            const detail = moduleDetailsCache[m.moduleCode];
+            const detail = moduleDetails[m.moduleCode];
             const examLine = detail 
             ? formatExamDate(detail.semesterData[0]?.examDate)
             : "Loading...";
