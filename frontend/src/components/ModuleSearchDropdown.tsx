@@ -29,6 +29,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [moduleDetails, setModuleDetails] = useState<Record<string, ModuleDetail>>({});
 
 
@@ -56,9 +57,13 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
             setIsOpen(false);
             return;
         }
-        setLoading(true);
         setError(null);
-        searchModules(val)
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+          setLoading(true);
+          searchModules(val)
             .then((data) => {
               const top = data.slice(0, MAX_RESULTS);
               setResults(top);
@@ -75,9 +80,9 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
               }); 
             })
             .catch(() => setError("Failed to search modules"))
-            .finally(() => setLoading(false));
-        
-    }
+            .finally(() => setLoading(false));    
+        }, 300);
+    } 
 
     function handleSelectModule(summary: ModuleSummary) {
         if (addedModuleCodes.has(summary.moduleCode)) {
