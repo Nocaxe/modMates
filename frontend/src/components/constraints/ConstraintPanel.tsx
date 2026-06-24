@@ -43,7 +43,6 @@ const ADDABLE: { type: ConstraintType; label: string; description: string }[] =
     },
   ];
 
-
 interface Props {
   // Expose constraints upward so the parent can include them in the optimize call
   onChange?: (
@@ -81,8 +80,9 @@ export function ConstraintPanel({ onChange }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Constraints</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Hard constraints must be met. Soft constraints are preferences.
+          <p className="text-xs text-gray-400 mt-0.5">
+            Hard constraints must be met. Soft constraints are preferences with
+            a priority weight. Click on the label to switch between hard/soft.
           </p>
         </div>
 

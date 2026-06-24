@@ -60,7 +60,9 @@ export function ConstraintRow({
               }
             `}
           >
-            {constraint.kind === "hard" ? "Hard" : "Soft"}
+            {constraint.kind === "hard"
+              ? "Constraint type: Hard"
+              : "Constraint type: Soft"}
           </button>
           {/* Remove */}
           <button
