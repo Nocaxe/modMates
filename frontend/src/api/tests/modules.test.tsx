@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vitest";
-import { searchModules } from "../modules";
+import { searchModules, getModuleDetail } from "../modules";
 
 it("searchModules calls the correct endpoint and returns encoded query", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
@@ -30,3 +30,32 @@ it("searchModules throws an error when the response is not ok", async () => {
         "Failed to search modules",
     );
 });
+
+it("getModuleDetail calls the correct endpoint and returns encoded module code", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ moduleCode: "CS2040S", title: "Data Structures and Algorithms" }),
+    }));
+    await getModuleDetail("CS2040S");
+
+    expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/modules/CS2040S"),
+    );
+});
+
+it("getModuleDetail returns the parsed JSON data when response is ok", async () => {
+    const mockData = { moduleCode: "CS2040S", title: "Data Structures and Algorithms" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+    }));
+    const result = await getModuleDetail("CS2040S");
+    expect(result).toEqual(mockData);
+}); 
+
+it("getModuleDetail throws an error when the response is not ok", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    await expect(getModuleDetail("CS2040S")).rejects.toThrow(
+        "Failed to fetch module detail",
+    );
+});   
