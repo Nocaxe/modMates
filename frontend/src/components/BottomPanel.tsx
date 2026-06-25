@@ -14,11 +14,13 @@ interface Props {
   // Pass through whatever props your ModuleSearch already takes
   onConstraintsChange?: (payload: object[]) => void;
   onAddModule: (module: Module) => void;
-  addedModuleCodes: Set<string>;
+  onRemoveModule: (moduleCode: string) => void;
+  modules: Module[];
 }
 
-export function BottomPanel({ onConstraintsChange, onAddModule, addedModuleCodes }: Props) {
+export function BottomPanel({ onConstraintsChange, onAddModule, onRemoveModule, modules }: Props) {
   const [active, setActive] = useState<Tab>("modules");
+  const addedModuleCodes = new Set(modules.map((m) => m.code));
 
   return (
     <div className="border border-gray-200 rounded-xl bg-gray shadow-sm overflow-hidden">
@@ -50,10 +52,28 @@ export function BottomPanel({ onConstraintsChange, onAddModule, addedModuleCodes
       {/* Content */}
       <div className="p-4 min-h-96 overflow-y-auto">
         {active === "modules" && (
+          <>
+            {modules.length > 0 && (
+              <ul className="mb-3 flex flex-col gap-2">
+                {modules.map((module) => (
+                  <li key={module.code} className="flex items-center justify-between gap-2">
+                    <span>{module.code}</span>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveModule(module.code)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           <ModuleSearchDropdown 
             onAddModule={onAddModule} 
-            addedModuleCodes={addedModuleCodes} 
+            addedModuleCodes={addedModuleCodes}
           />
+          </>
         )}
         {active === "constraints" && (
           <ConstraintPanel onChange={onConstraintsChange} />

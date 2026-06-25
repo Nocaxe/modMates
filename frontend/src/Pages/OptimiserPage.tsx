@@ -8,9 +8,6 @@ export default function OptimiserPage() {
      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_constraintPayload, setConstraintPayload] = useState<object[]>([]);
 
-
- 
-
   // TODO: Replace sel and locked with actual data
   //   async function handleOptimise() {
   //     const body = {
@@ -31,7 +28,11 @@ export default function OptimiserPage() {
 
     function handleAddModule(module: Module) {
         setModules((prev) => [...prev, module]);
-    }   
+    }
+    
+    function handleRemoveModule(moduleCode: string) {
+        setModules((prev) => prev.filter((m) => m.code !== moduleCode));
+    }
 
     return (
       <div className="flex flex-col gap-4">
@@ -42,7 +43,8 @@ export default function OptimiserPage() {
         <BottomPanel 
           onConstraintsChange={setConstraintPayload} 
           onAddModule={handleAddModule} 
-          addedModuleCodes={new Set(modules.map((m) => m.code))} 
+          onRemoveModule={handleRemoveModule}
+          modules={modules}
         />
       </div>
     )
