@@ -57,13 +57,17 @@ export function BottomPanel({ onConstraintsChange, onAddModule, onRemoveModule, 
               <ul className="mb-3 flex flex-col gap-2">
                 {modules.map((module) => (
                   <li key={module.code} className="flex items-center justify-between gap-2">
-                    <span>{module.code}</span>
+                    <span className ="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-blue-400 font-semibold text-sm shrink-0">{module.code}</span>
+                      <span className="text-white text-sm truncate">{module.title}</span>
+                    </span>
                     <button
                       type="button"
                       onClick={() => onRemoveModule(module.code)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-gray-400 hover:text-red-400 ml-3 text-xl leading-none shrink-0"
+                      aria-label={`Remove ${module.code}`}
                     >
-                      Remove
+                      x
                     </button>
                   </li>
                 ))}
