@@ -46,7 +46,7 @@ afterEach(() => {
 });
 
 async function search(query: string) {
-    await userEvent.type(screen.getByPlaceholderText("Search modules..."), query);
+    await userEvent.type(screen.getByPlaceholderText("Search e.g. CS2040S"), query);
     act(() => { vi.runAllTimers(); });  // run the debounce timer
 }
 
@@ -55,7 +55,7 @@ async function search(query: string) {
 
 it("renders the search input", () => {
     render(<ModuleSearchDropdown onAddModule={vi.fn()} addedModuleCodes={new Set()} />);
-    expect(screen.getByPlaceholderText("Search modules...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search e.g. CS2040S")).toBeInTheDocument();
 });
 
 it("does not show a dropdown on initial render", () => {
