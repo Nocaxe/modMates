@@ -48,7 +48,7 @@ export function BottomPanel({ onConstraintsChange, onAddModule, addedModuleCodes
       </div>
 
       {/* Content */}
-      <div className="p-4 max-h-96 overflow-y-auto">
+      <div className="p-4 min-h-96 overflow-y-auto">
         {active === "modules" && (
           <ModuleSearchDropdown 
             onAddModule={onAddModule} 
