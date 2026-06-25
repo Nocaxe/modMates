@@ -147,7 +147,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer hover:bg-gray-700"
                 }`}
-                onClick={() => { if (!isAdded) handleSelectModule(m); }}
+                onClick={() => handleSelectModule(m)}
               >
                 {/* Left: name + exam date */}
                 <div className="flex flex-col min-w-0">
