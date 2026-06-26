@@ -1,10 +1,4 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import {
-  getTimetable,
-  saveTimetable,
-  type TimetableData,
-} from "../api/timetable";
+import { useState } from "react";
 
 export interface Slot {
   classNo: string;
@@ -31,7 +25,7 @@ export interface ModuleColour {
   accent: string;
 }
 
-type SelectionState = Record<string, Record<string, string>>;
+export type SelectionState = Record<string, Record<string, string>>;
 
 type SelectedBlock = {
   type: "selected";
@@ -125,72 +119,23 @@ function LockIcon({ locked }: { locked: boolean }) {
   );
 }
 
-// accepts a module prop
-export default function TimetableUI({ modules = [] }: { modules?: Module[] }) {
-  // Set initial selection
-  const { session } = useAuth();
-  const LS_KEY = "modmates-timetable";
+interface TimetableUIProps {
+  modules?: Module[];
+  selection: SelectionState;
+  locked: Set<string>;
+  onSelectionChange: (s: SelectionState) => void;
+  onLockedChange: (l: Set<string>) => void;
+}
 
-  const [selection, setSelection] = useState<SelectionState>(() => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(LS_KEY) ?? "null",
-      ) as TimetableData | null;
-      if (saved?.selection) return saved.selection;
-    } catch {
-      return {};
-    }
-
-    const initial: SelectionState = {};
-    modules.forEach((mod) => {
-      initial[mod.code] = {};
-      Object.entries(mod.lessons).forEach(([lessonType, data]) => {
-        initial[mod.code][lessonType] = data.slots[0].classNo;
-      });
-    });
-    return initial;
-  });
-
-  // slot that is selected for moving
+export default function TimetableUI({
+  modules = [],
+  selection,
+  locked,
+  onSelectionChange,
+  onLockedChange,
+}: TimetableUIProps) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
-  const [locked, setLocked] = useState<Set<string>>(() => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(LS_KEY) ?? "null",
-      ) as TimetableData | null;
-      if (Array.isArray(saved?.locked)) return new Set<string>(saved.locked);
-    } catch {
-      return new Set<string>();
-    }
-    return new Set<string>();
-  });
-
-  // On mount, load timetable data from API if available
-  useEffect(() => {
-    if (!session) return;
-    getTimetable(session.access_token)
-      .then((data) => {
-        if (Object.keys(data.selection).length > 0) {
-          setSelection(data.selection);
-          setLocked(new Set(data.locked));
-        }
-      })
-      .catch(() => {}); // Silently fail and use defaults if API call fails
-  }, [session]);
-
-  // On change, write localStorage immediately, sync to API with debounce
-  useEffect(() => {
-    const data: TimetableData = { selection, locked: [...locked] };
-    localStorage.setItem(LS_KEY, JSON.stringify(data));
-    if (!session) return;
-    const timer = setTimeout(() => {
-      saveTimetable(session.access_token, data).catch(() => {}); // Silently fail if API call fails
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [selection, locked, session]);
-
-  // When user clicks a slot, set it as active for moving (or unselect if already active)
   function handleSlotClick(
     code: string,
     lessonType: string,
@@ -201,7 +146,6 @@ export default function TimetableUI({ modules = [] }: { modules?: Module[] }) {
     setActiveKey((prev) => (prev === key ? null : key));
   }
 
-  // When user clicks the lock icon, toggle lock state
   function handleLockClick(
     code: string,
     lessonType: string,
@@ -209,18 +153,15 @@ export default function TimetableUI({ modules = [] }: { modules?: Module[] }) {
   ) {
     e.stopPropagation();
     const key = slotKey(code, lessonType);
-    setLocked((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
+    const next = new Set(locked);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    onLockedChange(next);
   }
 
-  // When user clicks an alternative slot, move the active slot there
   function handleAlternativeClick(
     code: string,
     lessonType: string,
@@ -228,10 +169,7 @@ export default function TimetableUI({ modules = [] }: { modules?: Module[] }) {
     e: React.MouseEvent,
   ) {
     e.stopPropagation();
-    setSelection((prev) => ({
-      ...prev,
-      [code]: { ...prev[code], [lessonType]: classNo },
-    }));
+    onSelectionChange({ ...selection, [code]: { ...selection[code], [lessonType]: classNo } });
     setActiveKey(null);
   }
 
