@@ -30,6 +30,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
     const [error, setError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingRef = useRef<Set<string>>(new Set());
     const [moduleDetails, setModuleDetails] = useState<Record<string, ModuleDetail>>({});
 
 
@@ -89,7 +90,8 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
             setError("Module already added");
             return;
         }
-                
+        if (pendingRef.current.has(summary.moduleCode)) return;
+
         // check cache first
         const cached = moduleDetails[summary.moduleCode];
         if (cached) {
@@ -99,15 +101,19 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         }
 
         // fetch module details if not in cache
+        pendingRef.current.add(summary.moduleCode);
         setLoading(true);
         getModuleDetail(summary.moduleCode)
             .then((detail) => {
                 setModuleDetails((prev) => ({ ...prev, [summary.moduleCode]: detail }));
                 onAddModule(moduleDetailToModule(detail));
                 setIsOpen(false);
-            })                          
+            })
             .catch(() => setError("Failed to load module details"))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                pendingRef.current.delete(summary.moduleCode);
+                setLoading(false);
+            });
     }           
 
     return (

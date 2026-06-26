@@ -8,14 +8,18 @@ ACAD_YEAR = "2025-2026"
 
 _module_list_cache: list | None = None
 
+async def warmup_cache():
+    global _module_list_cache
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(f"{NUSMODS_BASE}/{ACAD_YEAR}/moduleList.json")
+        resp.raise_for_status()
+        _module_list_cache = resp.json()
+
 @router.get("/search")
 async def search_modules(query: str = Query(..., min_length=1)):
     global _module_list_cache
-    if _module_list_cache is None: # only fetch the modulelist once, reuse after
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{NUSMODS_BASE}/{ACAD_YEAR}/moduleList.json")
-            resp.raise_for_status()
-        _module_list_cache = resp.json()
+    if _module_list_cache is None:
+        await warmup_cache()
 
     query_lower = query.lower()
     results = [

@@ -2,6 +2,7 @@
 FastAPI application entry point
 '''
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -12,7 +13,12 @@ from app.routers import modules
 from app.routers import timetable
 from .auth import get_current_user
 
-app = FastAPI(title="modMates API")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    await modules.warmup_cache()
+    yield
+
+app = FastAPI(title="modMates API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

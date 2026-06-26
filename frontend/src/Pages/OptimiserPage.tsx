@@ -27,7 +27,10 @@ export default function OptimiserPage() {
   //   }
 
     function handleAddModule(module: Module) {
-        setModules((prev) => [...prev, module]);
+        setModules((prev) => {
+            if (prev.some((m) => m.code === module.code)) return prev;
+            return [...prev, module];
+        });
     }
     
     function handleRemoveModule(moduleCode: string) {
