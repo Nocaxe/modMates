@@ -14,8 +14,8 @@ def get_timetable(user=Depends(get_current_user), db: Session = Depends(get_db))
 
     row = db.get(UserTimetable, user["sub"])
     if row is None:
-        return {"selection": {}, "locked": []}
-    return {"selection": row.selection, "locked": row.locked}
+        return {"selection": {}, "locked": [], "modules": []}
+    return {"selection": row.selection, "locked": row.locked, "modules": row.modules or []}
 
 @router.put("/timetable", status_code=204)
 def save_timetable(body: TimetableBody, user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -23,10 +23,11 @@ def save_timetable(body: TimetableBody, user=Depends(get_current_user), db: Sess
 
     row = db.get(UserTimetable, user["sub"])
     if row is None:
-        row = UserTimetable(user_id=user["sub"], selection=body.selection, locked=body.locked)
+        row = UserTimetable(user_id=user["sub"], selection=body.selection, locked=body.locked, modules=body.modules)
         db.add(row)
     else:
         row.selection = body.selection
         row.locked = body.locked
+        row.modules = body.modules
     db.commit()
     

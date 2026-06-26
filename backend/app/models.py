@@ -22,5 +22,6 @@ class UserTimetable(Base):
         String, ForeignKey("profiles.user_id", ondelete="CASCADE"), primary_key=True
     )
     selection = Column(JSONB, nullable=False, server_default=text("'{}'"))
-    locked = Column(JSONB, nullable=False, server_default=text("'{}'"))
+    locked = Column(JSONB, nullable=False, server_default=text("'[]'"))
+    modules = Column(JSONB, nullable=False, server_default=text("'[]'"))
     updated_at = Column(DateTime(timezone=True), server_default=text("now()"))
