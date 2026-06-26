@@ -8,8 +8,8 @@ router = APIRouter()
 class SlotIn(BaseModel):
     classNo: str
     day: str
-    startTime: str
-    endTime: str
+    startTime: int
+    endTime: int
     venue: str
 
 class LessonGroupIn(BaseModel):
