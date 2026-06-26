@@ -31,7 +31,7 @@ it("getTimetable throws when the response is not ok", async () => {
 
 it("saveTimetable sends a PUT request with the correct headers and body", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-  const data = { selection: { CS2103T: { Lecture: "1" } }, locked: [] };
+  const data = { selection: { CS2103T: { Lecture: "1" } }, locked: [], modules: [] };
 
   await saveTimetable("my-token", data);
 
@@ -47,6 +47,6 @@ it("saveTimetable sends a PUT request with the correct headers and body", async 
 
 it("saveTimetable resolves without a value on success", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-  const data = { selection: {}, locked: [] };
+  const data = { selection: {}, locked: [], modules: [] };
   await expect(saveTimetable("my-token", data)).resolves.toBeUndefined();
 });

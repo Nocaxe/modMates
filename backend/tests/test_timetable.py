@@ -47,7 +47,7 @@ def test_get_timetable_returns_empty_defaults_when_no_row_exists():
     try:
         response = client.get("/timetable")
         assert response.status_code == 200
-        assert response.json() == {"selection": {}, "locked": []}
+        assert response.json() == {"selection": {}, "locked": [], "modules": []}
     finally:
         clear_overrides()
 
