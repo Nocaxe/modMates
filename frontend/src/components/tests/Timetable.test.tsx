@@ -1,7 +1,9 @@
 import { render, screen, act, fireEvent } from "@testing-library/react";
+import { useState, useEffect } from "react";
 import { vi, it, expect, beforeEach, afterEach } from "vitest";
-import TimetableUI, { type Module } from "../../components/Timetable";
-import type { TimetableData } from "../../api/timetable";
+import TimetableUI, { type Module, type SelectionState } from "../../components/Timetable";
+import { getTimetable, saveTimetable, type TimetableData } from "../../api/timetable";
+import { useAuth } from "../../contexts/AuthContext";
 
 const { mockUseAuth, mockGetTimetable, mockSaveTimetable } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
@@ -20,6 +22,63 @@ vi.mock("../../api/timetable", () => ({
 
 const LS_KEY = "modmates-timetable";
 const TEST_SESSION = { access_token: "test-token" };
+
+// Mirrors OptimiserPage's state management so tests can pass only `modules`
+function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
+  const { session } = useAuth();
+  const [selection, setSelection] = useState<SelectionState>(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      return (raw ? (JSON.parse(raw) as TimetableData) : null)?.selection ?? {};
+    } catch {
+      return {};
+    }
+  });
+  const [locked, setLocked] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      return new Set((raw ? (JSON.parse(raw) as TimetableData) : null)?.locked ?? []);
+    } catch {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    if (!session) return;
+    getTimetable(session.access_token)
+      .then((data: TimetableData) => {
+        if (Object.keys(data.selection).length > 0) {
+          setSelection(data.selection);
+          setLocked(new Set(data.locked));
+        }
+      })
+      .catch(() => {});
+  }, [session]);
+
+  useEffect(() => {
+    const data: TimetableData = {
+      selection,
+      locked: [...locked],
+      modules: modules.map((m) => m.code),
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    if (!session) return;
+    const timer = setTimeout(() => {
+      saveTimetable(session.access_token, data).catch(() => {});
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [selection, locked, modules, session]);
+
+  return (
+    <TimetableUI
+      modules={modules}
+      selection={selection}
+      locked={locked}
+      onSelectionChange={setSelection}
+      onLockedChange={setLocked}
+    />
+  );
+}
 
 const ALL_MODULES = ["CS2103T", "CS2040S", "CS2101", "MA2001", "CS3230"];
 
@@ -110,20 +169,20 @@ afterEach(() => {
 // Rendering
 
 it("renders all day abbreviations", () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   for (const day of ["Mon", "Tue", "Wed", "Thu", "Fri"]) {
     expect(screen.getByText(day)).toBeInTheDocument();
   }
 });
 
 it("renders hour labels from 08:00 to 20:00", () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   expect(screen.getByText("08:00")).toBeInTheDocument();
   expect(screen.getByText("20:00")).toBeInTheDocument();
 });
 
 it("renders all module codes in the default view", () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   for (const code of ALL_MODULES) {
     expect(screen.getAllByText(code).length).toBeGreaterThan(0);
   }
@@ -132,7 +191,7 @@ it("renders all module codes in the default view", () => {
 // localStorage: loading
 
 it("falls back to default selection when localStorage is empty", () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   for (const code of ALL_MODULES) {
     expect(screen.getAllByText(code).length).toBeGreaterThan(0);
   }
@@ -145,7 +204,7 @@ it("reads saved selection from localStorage on mount", () => {
   };
   localStorage.setItem(LS_KEY, JSON.stringify(saved));
 
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
 
   for (const code of ALL_MODULES) {
     expect(screen.getAllByText(code).length).toBeGreaterThan(0);
@@ -159,7 +218,7 @@ it("reads locked state from localStorage on mount", () => {
   };
   localStorage.setItem(LS_KEY, JSON.stringify(saved));
 
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
 
   expect(
     screen.getByRole("button", { name: "Unlock slot" }),
@@ -169,7 +228,7 @@ it("reads locked state from localStorage on mount", () => {
 // localStorage: saving
 
 it("writes timetable to localStorage on initial render", async () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   const raw = localStorage.getItem(LS_KEY);
@@ -181,7 +240,7 @@ it("writes timetable to localStorage on initial render", async () => {
 });
 
 it("persists locked state to localStorage after locking a slot", async () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   const lockButtons = screen.getAllByRole("button", { name: "Lock slot" });
@@ -196,7 +255,7 @@ it("persists locked state to localStorage after locking a slot", async () => {
 
 it("does not call getTimetable when there is no session", async () => {
   mockUseAuth.mockReturnValue({ session: null });
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   expect(mockGetTimetable).not.toHaveBeenCalled();
@@ -204,7 +263,7 @@ it("does not call getTimetable when there is no session", async () => {
 
 it("calls getTimetable with the access token when authenticated", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   expect(mockGetTimetable).toHaveBeenCalledWith("test-token");
@@ -217,7 +276,7 @@ it("applies selection and locked state from API when it returns non-empty data",
     locked: ["CS2103T|Lecture"],
   });
 
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   expect(
@@ -229,7 +288,7 @@ it("does not update state when API returns an empty selection", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
   mockGetTimetable.mockResolvedValue({ selection: {}, locked: [] });
 
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   expect(
@@ -241,7 +300,7 @@ it("renders with defaults when getTimetable throws", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
   mockGetTimetable.mockRejectedValue(new Error("Network error"));
 
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   for (const code of ALL_MODULES) {
@@ -253,7 +312,7 @@ it("renders with defaults when getTimetable throws", async () => {
 
 it("does not call saveTimetable before the debounce window elapses", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   act(() => {
@@ -265,7 +324,7 @@ it("does not call saveTimetable before the debounce window elapses", async () =>
 
 it("calls saveTimetable with the token and data after 1000ms debounce", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   act(() => {
@@ -283,7 +342,7 @@ it("calls saveTimetable with the token and data after 1000ms debounce", async ()
 
 it("does not call saveTimetable even after debounce when not authenticated", async () => {
   mockUseAuth.mockReturnValue({ session: null });
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   act(() => {
@@ -296,7 +355,7 @@ it("does not call saveTimetable even after debounce when not authenticated", asy
 // Lock toggling
 
 it("changes lock button label to Unlock slot after clicking Lock slot", async () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   const lockButton = screen.getAllByRole("button", { name: "Lock slot" })[0];
@@ -308,7 +367,7 @@ it("changes lock button label to Unlock slot after clicking Lock slot", async ()
 });
 
 it("reverts Unlock slot back to Lock slot when clicked again", async () => {
-  render(<TimetableUI modules={MOCK_MODULES} />);
+  render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   const lockButton = screen.getAllByRole("button", { name: "Lock slot" })[0];
