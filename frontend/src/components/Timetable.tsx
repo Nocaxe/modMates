@@ -6,7 +6,7 @@ import {
   type TimetableData,
 } from "../api/timetable";
 
-interface Slot {
+export interface Slot {
   classNo: string;
   day: string;
   start: number; // minutes from midnight
@@ -14,17 +14,17 @@ interface Slot {
   venue: string;
 }
 
-interface LessonGroup {
+export interface LessonGroup {
   slots: Slot[];
 }
 
-interface Module {
+export interface Module {
   code: string;
   title: string;
   lessons: Record<string, LessonGroup>; // Lesson type, lesson group
 }
 
-interface ModuleColour {
+export interface ModuleColour {
   bg: string;
   border: string;
   text: string;
@@ -107,317 +107,6 @@ function slotKey(code: string, lessonType: string) {
   return `${code}|${lessonType}`;
 }
 
-// DUMMY DATA
-// TODO: REMOVE ONCE API IS INTEGRATED
-const hm = (hour: number, min = 0): number => hour * 60 + min;
-
-const MODULES: Module[] = [
-  {
-    code: "CS2103T",
-    title: "Software Engineering",
-    lessons: {
-      Lecture: {
-        slots: [
-          {
-            classNo: "1",
-            day: "Friday",
-            start: hm(14),
-            end: hm(16),
-            venue: "I3-AUD",
-          },
-        ],
-      },
-      Tutorial: {
-        slots: [
-          {
-            classNo: "01",
-            day: "Wednesday",
-            start: hm(10),
-            end: hm(11),
-            venue: "COM1-0207",
-          },
-          {
-            classNo: "02",
-            day: "Wednesday",
-            start: hm(11),
-            end: hm(12),
-            venue: "COM1-0207",
-          },
-          {
-            classNo: "03",
-            day: "Thursday",
-            start: hm(10),
-            end: hm(11),
-            venue: "COM1-0208",
-          },
-          {
-            classNo: "04",
-            day: "Thursday",
-            start: hm(14),
-            end: hm(15),
-            venue: "COM1-0208",
-          },
-          {
-            classNo: "05",
-            day: "Friday",
-            start: hm(10),
-            end: hm(11),
-            venue: "COM1-0206",
-          },
-        ],
-      },
-    },
-  },
-  {
-    code: "CS2040S",
-    title: "Data Structures & Algorithms",
-    lessons: {
-      Lecture: {
-        // Group "1" has two sessions (Tue + Wed); group "2" has two sessions (Mon + Wed).
-        // Students pick one group and attend all its sessions.
-        slots: [
-          {
-            classNo: "1",
-            day: "Tuesday",
-            start: hm(10),
-            end: hm(12),
-            venue: "LT27",
-          },
-          {
-            classNo: "1",
-            day: "Wednesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0217",
-          },
-          {
-            classNo: "2",
-            day: "Monday",
-            start: hm(10),
-            end: hm(12),
-            venue: "LT27",
-          },
-          {
-            classNo: "2",
-            day: "Wednesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0217",
-          },
-        ],
-      },
-      Tutorial: {
-        slots: [
-          {
-            classNo: "01",
-            day: "Wednesday",
-            start: hm(14),
-            end: hm(15),
-            venue: "COM1-0208",
-          },
-          {
-            classNo: "02",
-            day: "Wednesday",
-            start: hm(15),
-            end: hm(16),
-            venue: "COM1-0208",
-          },
-          {
-            classNo: "03",
-            day: "Thursday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0206",
-          },
-          {
-            classNo: "04",
-            day: "Friday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0206",
-          },
-          {
-            classNo: "05",
-            day: "Friday",
-            start: hm(11),
-            end: hm(12),
-            venue: "COM1-0210",
-          },
-        ],
-      },
-      Laboratory: {
-        slots: [
-          {
-            classNo: "01",
-            day: "Thursday",
-            start: hm(14),
-            end: hm(16),
-            venue: "COM1-B108",
-          },
-          {
-            classNo: "02",
-            day: "Thursday",
-            start: hm(16),
-            end: hm(18),
-            venue: "COM1-B108",
-          },
-          {
-            classNo: "03",
-            day: "Friday",
-            start: hm(14),
-            end: hm(16),
-            venue: "COM1-B112",
-          },
-        ],
-      },
-    },
-  },
-  {
-    code: "CS2101",
-    title: "Effective Communication",
-    lessons: {
-      "Sectional Teaching": {
-        slots: [
-          {
-            classNo: "01",
-            day: "Tuesday",
-            start: hm(14),
-            end: hm(16),
-            venue: "AS6-0333",
-          },
-          {
-            classNo: "02",
-            day: "Tuesday",
-            start: hm(16),
-            end: hm(18),
-            venue: "AS6-0333",
-          },
-          {
-            classNo: "03",
-            day: "Wednesday",
-            start: hm(16),
-            end: hm(18),
-            venue: "AS6-0208",
-          },
-          {
-            classNo: "04",
-            day: "Thursday",
-            start: hm(14),
-            end: hm(16),
-            venue: "AS6-0208",
-          },
-        ],
-      },
-    },
-  },
-  {
-    code: "MA2001",
-    title: "Linear Algebra I",
-    lessons: {
-      Lecture: {
-        slots: [
-          {
-            classNo: "1",
-            day: "Monday",
-            start: hm(10),
-            end: hm(12),
-            venue: "LT31",
-          },
-        ],
-      },
-      Tutorial: {
-        slots: [
-          {
-            classNo: "01",
-            day: "Monday",
-            start: hm(14),
-            end: hm(15),
-            venue: "S17-0304",
-          },
-          {
-            classNo: "02",
-            day: "Monday",
-            start: hm(15),
-            end: hm(16),
-            venue: "S17-0304",
-          },
-          {
-            classNo: "03",
-            day: "Tuesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "S17-0302",
-          },
-          {
-            classNo: "04",
-            day: "Wednesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "S17-0302",
-          },
-          {
-            classNo: "05",
-            day: "Friday",
-            start: hm(9),
-            end: hm(10),
-            venue: "S17-0304",
-          },
-        ],
-      },
-    },
-  },
-  {
-    code: "CS3230",
-    title: "Design & Analysis of Algorithms",
-    lessons: {
-      Lecture: {
-        slots: [
-          {
-            classNo: "1",
-            day: "Monday",
-            start: hm(16),
-            end: hm(18),
-            venue: "LT19",
-          },
-        ],
-      },
-      Tutorial: {
-        slots: [
-          {
-            classNo: "01",
-            day: "Tuesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0210",
-          },
-          {
-            classNo: "02",
-            day: "Wednesday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0210",
-          },
-          {
-            classNo: "03",
-            day: "Thursday",
-            start: hm(9),
-            end: hm(10),
-            venue: "COM1-0208",
-          },
-          {
-            classNo: "04",
-            day: "Friday",
-            start: hm(13),
-            end: hm(14),
-            venue: "COM1-0206",
-          },
-        ],
-      },
-    },
-  },
-];
-// END OF DUMMY DATA
-
 function LockIcon({ locked }: { locked: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0">
@@ -436,7 +125,8 @@ function LockIcon({ locked }: { locked: boolean }) {
   );
 }
 
-export default function TimetableUI() {
+// accepts a module prop
+export default function TimetableUI({ modules = [] }: { modules?: Module[] }) {
   // Set initial selection
   const { session } = useAuth();
   const LS_KEY = "modmates-timetable";
@@ -452,7 +142,7 @@ export default function TimetableUI() {
     }
 
     const initial: SelectionState = {};
-    MODULES.forEach((mod) => {
+    modules.forEach((mod) => {
       initial[mod.code] = {};
       Object.entries(mod.lessons).forEach(([lessonType, data]) => {
         initial[mod.code][lessonType] = data.slots[0].classNo;
@@ -550,10 +240,11 @@ export default function TimetableUI() {
     const selectedBlocks: SelectedBlock[] = [];
     const alternativeBlocks: AlternativeBlock[] = [];
 
-    MODULES.forEach((mod) => {
+    modules.forEach((mod) => {
       Object.entries(mod.lessons).forEach(([lessonType, data]) => {
         const key = slotKey(mod.code, lessonType);
-        const selectedClassNo = selection[mod.code][lessonType];
+        const selectedClassNo =
+          selection[mod.code]?.[lessonType] ?? data.slots[0].classNo; // fallback to first slot if not selected
         const isActive = activeKey === key;
         const isLocked = locked.has(key);
 
@@ -654,7 +345,7 @@ export default function TimetableUI() {
                 {laneAssignments.map(({ block, lane }) => {
                   const { slot, mod, lessonType } = block;
                   const colourIndex =
-                    MODULES.findIndex((m) => m.code === mod.code) %
+                    modules.findIndex((m) => m.code === mod.code) %
                     MODULE_COLOURS.length;
                   const colour = MODULE_COLOURS[colourIndex];
                   const leftPct = timeToPercent(slot.start);

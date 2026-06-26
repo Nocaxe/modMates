@@ -6,16 +6,24 @@ router = APIRouter(prefix="/modules", tags=["modules"])
 NUSMODS_BASE = "https://api.nusmods.com/v2"
 ACAD_YEAR = "2025-2026"
 
-@router.get("/search")
-async def search_modules(query: str = Query(..., min_length=1)):
+_module_list_cache: list | None = None
+
+async def warmup_cache():
+    global _module_list_cache
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"{NUSMODS_BASE}/{ACAD_YEAR}/moduleList.json")
         resp.raise_for_status()
-        all_modules = resp.json()
+        _module_list_cache = resp.json()
+
+@router.get("/search")
+async def search_modules(query: str = Query(..., min_length=1)):
+    global _module_list_cache
+    if _module_list_cache is None:
+        await warmup_cache()
 
     query_lower = query.lower()
     results = [
-        m for m in all_modules
+        m for m in _module_list_cache
         if query_lower in m["moduleCode"].lower()
         or query_lower in m["title"].lower()
     ]
