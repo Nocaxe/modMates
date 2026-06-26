@@ -6,7 +6,7 @@ from app.solver import solve
 router = APIRouter()
 
 class SlotIn(BaseModel):
-    class_no: str
+    classNo: str
     day: str
     startTime: str
     endTime: str
