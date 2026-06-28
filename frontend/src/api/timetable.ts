@@ -1,6 +1,7 @@
 export type TimetableData = {
   selection: Record<string, Record<string, string>>;
   locked: string[];
+  modules: string[];
 };
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
@@ -12,7 +13,8 @@ export async function getTimetable(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!response.ok) throw new Error("Failed to fetch timetable data");
-  return response.json() as Promise<TimetableData>;
+  const body: unknown = await response.json();
+  return body as TimetableData;
 }
 
 export async function saveTimetable(
