@@ -107,3 +107,5 @@ watchfiles==1.2.0
     # via uvicorn
 websockets==16.0
     # via uvicorn
+z3-solver==4.16.0.0
+    # via -r requirements.in

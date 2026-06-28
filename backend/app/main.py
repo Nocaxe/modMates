@@ -11,6 +11,7 @@ from app.database import get_db
 from app.config import settings
 from app.routers import modules
 from app.routers import timetable
+from app.routers import optimiser
 from .auth import get_current_user
 
 @asynccontextmanager
@@ -30,6 +31,7 @@ app.add_middleware(
 
 app.include_router(modules.router)
 app.include_router(timetable.router)
+app.include_router(optimiser.router)
 
 @app.get("/health")
 def health_check():
