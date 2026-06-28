@@ -44,9 +44,10 @@ def _compute_score(soft_constraints: list[dict], sel: dict, classno_to_slots: di
     total_w = 0
     satisfied_w = 0
 
+    _WEIGHT_MAP = [1, 3, 10, 30, 100]
     for c in soft_constraints:
         t = c["type"]
-        w = int(c.get("weight", 1))
+        w = _WEIGHT_MAP[max(0, min(4, int(c.get("weight", 1)) - 1))]
         total_w += w
         ok = False
 
@@ -157,9 +158,10 @@ def solve(modules, selection, locked: set[str], constraints: list[dict]) -> dict
                     opt.add(var != i)
 
     # soft contraints, Z3 maximises total satisfied weight according to various types
+    _WEIGHT_MAP = [1, 3, 10, 30, 100]
     for c in soft:
         t = c["type"]
-        w = int(c.get("weight", 1))
+        w = _WEIGHT_MAP[max(0, min(4, int(c.get("weight", 1)) - 1))]
 
         # Per-option soft: same check as hard, but add_soft instead of add.
         # The solver will prefer honouring these but won't fail if it can't.
