@@ -8,6 +8,7 @@ import {
   saveTimetable,
   type TimetableData,
 } from "../api/timetable";
+import { optimise } from "../api/optimise";
 import { useAuth } from "../contexts/AuthContext";
 
 const LS_KEY = "modmates-timetable";
@@ -61,8 +62,8 @@ export default function OptimiserPage() {
   const [locked, setLocked] = useState<Set<string>>(
     () => new Set(loadFromLocalStorage().locked),
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_constraintPayload, setConstraintPayload] = useState<object[]>([]);
+
+  const [constraintPayload, setConstraintPayload] = useState<object[]>([]);
 
   // On mount: restore from localStorage immediately, then overwrite with API data if logged in
   useEffect(() => {
@@ -103,6 +104,18 @@ export default function OptimiserPage() {
     return () => clearTimeout(timer);
   }, [selection, locked, modules, session]);
 
+  async function handleOptimise() {
+    const result = await optimise({
+      modules,
+      selection,
+      locked: [...locked],
+      constraints: constraintPayload,
+    });
+    if (result.score >= 0) {
+      setSelection(result.selection);
+    }
+  }
+
   function handleAddModule(module: Module) {
     setModules((prev) => {
       if (prev.some((m) => m.code === module.code)) return prev;
@@ -136,9 +149,13 @@ export default function OptimiserPage() {
         onSelectionChange={setSelection}
         onLockedChange={setLocked}
       />
-      {/* <button onClick={handleOptimise} className="mt-4 w-full bg-white">
-          Optimise
-        </button> */}
+      <button
+        type="button"
+        onClick={() => { void handleOptimise(); }}
+        className="w-full py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+      >
+        Optimise
+      </button>
       <BottomPanel
         onConstraintsChange={setConstraintPayload}
         onAddModule={handleAddModule}
