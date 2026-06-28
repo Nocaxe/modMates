@@ -121,10 +121,10 @@ def solve(modules, selection, locked: set[str], constraints: list[dict]) -> dict
             z3_vars[key] = var
             opt.add(var >= 0, var < len(index_to_classno[key]))
 
-    # dealing with locked modules (pin variable to index of selected class)
+    # dealing with locked lesson types (pin variable to index of selected class)
     for mod in modules:
-        if mod.code in locked:
-            for lessonType in mod.lessons:
+        for lessonType in mod.lessons:
+            if f"{mod.code}|{lessonType}" in locked:
                 key = (mod.code, lessonType)
                 current = selection.get(mod.code, {}).get(lessonType)
                 if current and current in index_to_classno.get(key, []):
