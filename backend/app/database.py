@@ -10,16 +10,20 @@ from app.config import settings
 class Base(DeclarativeBase):
     '''Base class for SQLAlchemy models.'''
 
-def get_engine():
-    '''Creates and returns a SQLAlchemy engine using the database URL from settings.'''
-    return create_engine(settings.database_url)
+# Single engine instance shared across all requests.
+# pool_size + max_overflow must stay within Supabase's session-mode limit (15).
+engine = create_engine(
+    settings.database_url,
+    pool_size=2,
+    max_overflow=4,
+)
+
+SessionLocal = sessionmaker(bind=engine)
 
 # Dependency for getting DB session in FastAPI routes
 def get_db():
     '''Provides a database session for FastAPI routes'''
-    engine = get_engine()
-    session_local = sessionmaker(bind=engine)
-    db = session_local()
+    db = SessionLocal()
     try:
         yield db
     finally:
