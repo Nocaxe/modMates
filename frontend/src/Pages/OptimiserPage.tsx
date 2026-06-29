@@ -15,13 +15,12 @@ const LS_KEY = "modmates-timetable";
 
 function loadFromLocalStorage(): TimetableData {
   try {
-    return (
-      (JSON.parse(localStorage.getItem(LS_KEY) ?? "null") as TimetableData) ?? {
-        selection: {},
-        locked: [],
-        modules: [],
-      }
-    );
+    const parsed = JSON.parse(localStorage.getItem(LS_KEY) ?? "null") as TimetableData | null;
+    return {
+        selection: parsed?.selection ?? {},
+        locked: parsed?.locked ?? [],
+        modules: parsed?.modules ?? [],
+      };
   } catch {
     return { selection: {}, locked: [], modules: [] };
   }
