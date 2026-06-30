@@ -295,7 +295,7 @@ export default function TimetableUI({
 
                   return (
                     <div
-                      key={`${block.key}-${slot.classNo}`}
+                      key={`${block.key}-${slot.classNo}-${slot.start}-${slot.end}`}
                       className="absolute rounded-md cursor-pointer flex flex-col justify-center px-1.5 overflow-hidden transition-opacity duration-100"
                       style={{
                         top: lane * LANE_HEIGHT + 6,
