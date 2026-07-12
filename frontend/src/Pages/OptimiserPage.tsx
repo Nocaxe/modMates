@@ -2,25 +2,30 @@ import { useState, useEffect } from "react";
 import type { Module, SelectionState } from "../components/Timetable";
 import TimetableUI from "../components/Timetable";
 import { BottomPanel } from "../components/BottomPanel";
+import { SolutionPicker } from "../components/SolutionPicker";
+import { GroupOverlapPanel } from "../components/GroupOverlapPanel";
 import { getModuleDetail, moduleDetailToModule } from "../api/modules";
 import {
   getTimetable,
   saveTimetable,
   type TimetableData,
 } from "../api/timetable";
-import { optimise } from "../api/optimise";
+import { optimise, type RankedSolution, type GroupMember } from "../api/optimise";
+import { getDummyGroupMembers } from "../data/dummyGroupMembers";
 import { useAuth } from "../contexts/AuthContext";
 
 const LS_KEY = "modmates-timetable";
 
 function loadFromLocalStorage(): TimetableData {
   try {
-    const parsed = JSON.parse(localStorage.getItem(LS_KEY) ?? "null") as TimetableData | null;
+    const parsed = JSON.parse(
+      localStorage.getItem(LS_KEY) ?? "null",
+    ) as TimetableData | null;
     return {
-        selection: parsed?.selection ?? {},
-        locked: parsed?.locked ?? [],
-        modules: parsed?.modules ?? [],
-      };
+      selection: parsed?.selection ?? {},
+      locked: parsed?.locked ?? [],
+      modules: parsed?.modules ?? [],
+    };
   } catch {
     return { selection: {}, locked: [], modules: [] };
   }
@@ -63,6 +68,9 @@ export default function OptimiserPage() {
   );
 
   const [constraintPayload, setConstraintPayload] = useState<object[]>([]);
+  const [solutions, setSolutions] = useState<RankedSolution[]>([]);
+  const [selectedSolutionIndex, setSelectedSolutionIndex] = useState(0);
+  const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
 
   // On mount: restore from localStorage immediately, then overwrite with API data if logged in
   useEffect(() => {
@@ -104,15 +112,32 @@ export default function OptimiserPage() {
   }, [selection, locked, modules, session]);
 
   async function handleOptimise() {
+    const hasGroupOverlap = (
+      constraintPayload as Array<{ type?: string }>
+    ).some((c) => c.type === "group_overlap");
+    const group_members = hasGroupOverlap
+      ? getDummyGroupMembers(modules, selection)
+      : undefined;
+
     const result = await optimise({
       modules,
       selection,
       locked: [...locked],
       constraints: constraintPayload,
+      group_members,
     });
-    if (result.score >= 0) {
-      setSelection(result.selection);
+
+    if (result.solutions.length > 0 && result.solutions[0].score >= 0) {
+      setSolutions(result.solutions);
+      setSelectedSolutionIndex(0);
+      setSelection(result.solutions[0].selection);
+      setGroupMembers(group_members ?? null);
     }
+  }
+
+  function handleSolutionSelect(index: number) {
+    setSelectedSolutionIndex(index);
+    setSelection(solutions[index].selection);
   }
 
   function handleAddModule(module: Module) {
@@ -121,6 +146,9 @@ export default function OptimiserPage() {
       return [...prev, module];
     });
     setSelection((prev) => seedDefaults([module], prev));
+    setSolutions([]);
+    setSelectedSolutionIndex(0);
+    setGroupMembers(null);
   }
 
   function handleRemoveModule(moduleCode: string) {
@@ -137,6 +165,9 @@ export default function OptimiserPage() {
       });
       return next;
     });
+    setSolutions([]);
+    setSelectedSolutionIndex(0);
+    setGroupMembers(null);
   }
 
   return (
@@ -150,11 +181,26 @@ export default function OptimiserPage() {
       />
       <button
         type="button"
-        onClick={() => { void handleOptimise(); }}
+        onClick={() => {
+          void handleOptimise();
+        }}
         className="w-full py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
       >
         Optimise
       </button>
+      <SolutionPicker
+        solutions={solutions}
+        selectedIndex={selectedSolutionIndex}
+        onSelect={handleSolutionSelect}
+      />
+      {groupMembers && groupMembers.length > 0 && (
+        <GroupOverlapPanel
+          modules={modules}
+          userSelection={selection}
+          groupMembers={groupMembers}
+          rankIndex={selectedSolutionIndex}
+        />
+      )}
       <BottomPanel
         onConstraintsChange={setConstraintPayload}
         onAddModule={handleAddModule}
