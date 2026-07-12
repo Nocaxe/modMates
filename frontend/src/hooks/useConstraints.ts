@@ -31,6 +31,7 @@ const DEFAULTS: Record<
     duration: 60,
   },
   max_consecutive: { type: "max_consecutive", hours: 3 },
+  group_overlap: { type: "group_overlap" },
 };
 
 export function useConstraints() {

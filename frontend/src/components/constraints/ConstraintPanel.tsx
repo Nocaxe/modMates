@@ -41,6 +41,11 @@ const ADDABLE: { type: ConstraintType; label: string; description: string }[] =
       label: "Max consecutive",
       description: "Limit back-to-back lesson hours",
     },
+    {
+      type: "group_overlap",
+      label: "Group overlap",
+      description: "Maximise shared classes with group members",
+    },
   ];
 
 interface Props {
