@@ -4,7 +4,7 @@ import httpx
 router = APIRouter(prefix="/modules", tags=["modules"])
 
 NUSMODS_BASE = "https://api.nusmods.com/v2"
-ACAD_YEAR = "2025-2026"
+ACAD_YEAR = "2026-2027"
 
 _module_list_cache: list | None = None
 
