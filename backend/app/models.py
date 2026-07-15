@@ -12,7 +12,7 @@ class Profile(Base):
 
     __tablename__ = "profiles"
     user_id = Column(String, primary_key=True)
-    email = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime(timezone=True), server_default=text("now()"))
 
 
