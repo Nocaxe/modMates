@@ -7,6 +7,7 @@ import LandingLayout from './layouts/LandingLayout.tsx'
 import { AuthProvider } from "./contexts/AuthContext"
 import LandingPage from './Pages/LandingPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
+import GroupsPage from './Pages/GroupsPage.tsx'
 import ProfilePage from './Pages/ProfilePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: 'optimiser', element: <OptimiserPage /> },
+      { path: 'groups', element: <ProtectedRoute><GroupsPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> }
     ]
   }
