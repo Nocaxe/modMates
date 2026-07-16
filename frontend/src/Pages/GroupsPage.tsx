@@ -1,12 +1,13 @@
 import {useAuth} from "../contexts/AuthContext";
 import {useEffect, useState} from "react";
-import {listMyGroups, createGroup} from "../api/groups";
+import {listMyGroups, createGroup, joinGroup } from "../api/groups";
 import type {Group} from "../api/groups";
 
 export default function GroupsPage() {
     const {session} = useAuth()
     const [groups, setGroups] = useState<Group[]>([])
     const [name, setName] = useState<string>("")
+    const [inviteCode, setInviteCode] = useState<string>("")
 
     function refreshGroups() {
         if (!session) return
@@ -19,6 +20,13 @@ export default function GroupsPage() {
         if (!session) return
         await createGroup(session.access_token, name)
         setName("")
+        refreshGroups()
+    }
+
+    async function onJoin() {
+        if (!session) return
+        await joinGroup(session.access_token, inviteCode)
+        setInviteCode("")
         refreshGroups()
     }
 
@@ -39,6 +47,18 @@ export default function GroupsPage() {
                     <button onClick={() => void onCreate()} 
                         className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
                         Create Group
+                    </button>
+                </div>
+                <div className="mb-4">
+                    <input
+                        value={inviteCode}
+                        placeholder="Invite code"
+                        onChange={(e) => setInviteCode(e.target.value)}
+                        className="text-black px-2 rounded"
+                    />
+                    <button onClick={() => void onJoin()} 
+                        className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
+                        Join Group
                     </button>
                 </div>
                 {groups.map((group) => (
