@@ -75,8 +75,8 @@ export async function getGroupMembers(accessToken: string, groupId: number): Pro
 }   
 
 export async function leaveGroup(accessToken: string, groupId: number): Promise<void> {
-    const response = await fetch(`${API_BASE}/groups/${groupId}/leave`, {
-        method: 'POST',
+    const response = await fetch(`${API_BASE}/groups/${groupId}/members/me`, {
+        method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${accessToken}`
         }
@@ -85,3 +85,15 @@ export async function leaveGroup(accessToken: string, groupId: number): Promise<
         throw new Error('Failed to leave group');
     }
 }   
+
+export async function getOptimiserMembers(accessToken: string, groupId: number): Promise<OptimiserGroupMember[]> {
+    const response = await fetch(`${API_BASE}/groups/${groupId}/optimiser-members`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch optimiser members');
+    }
+    return response.json() as Promise<OptimiserGroupMember[]>;
+}
