@@ -1,6 +1,6 @@
 import {useAuth} from "../contexts/AuthContext";
 import {useEffect, useState} from "react";
-import {listMyGroups, createGroup, joinGroup } from "../api/groups";
+import {listMyGroups, createGroup, joinGroup, leaveGroup } from "../api/groups";
 import type {Group} from "../api/groups";
 
 export default function GroupsPage() {
@@ -27,6 +27,12 @@ export default function GroupsPage() {
         if (!session) return
         await joinGroup(session.access_token, inviteCode)
         setInviteCode("")
+        refreshGroups()
+    }
+
+    async function onLeave(groupId: number) {
+        if (!session) return
+        await leaveGroup(session.access_token, groupId)
         refreshGroups()
     }
 
@@ -66,6 +72,10 @@ export default function GroupsPage() {
                         <h2 className="text-xl font-bold mb-2">{group.name}</h2>
                         <span>Invite code: {group.invite_code}</span>
                         <span>Members: {group.member_count}</span>
+                        <button onClick={() => void onLeave(group.id)} 
+                            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 mt-2">
+                            Leave Group
+                        </button>
                     </div>
                 ))}
             </div>
