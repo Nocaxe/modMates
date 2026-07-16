@@ -41,26 +41,25 @@ export default function GroupsPage() {
     }, [session])
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen py-2">
-            <div className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-                <div className="mb-4">
+            <div className="flex flex-col items-center gap-6 px-4 py-8">
+                <div className="flex gap-2">
                     <input
                         value={name}
                         placeholder="Group name"
                         onChange={(e) => setName(e.target.value)}
-                        className="text-black px-2 rounded"
+                        className="text-black bg-white py-1 rounded border border-gray-300"
                     />
                     <button onClick={() => void onCreate()} 
                         className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
                         Create Group
                     </button>
                 </div>
-                <div className="mb-4">
+                <div className="flex gap-2">
                     <input
                         value={inviteCode}
                         placeholder="Invite code"
                         onChange={(e) => setInviteCode(e.target.value)}
-                        className="text-black px-2 rounded"
+                        className="text-black bg-white py-1 rounded border border-gray-300"
                     />
                     <button onClick={() => void onJoin()} 
                         className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
@@ -79,7 +78,6 @@ export default function GroupsPage() {
                     </div>
                 ))}
             </div>
-        </div>
     )
 }
 
