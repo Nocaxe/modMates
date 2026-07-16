@@ -34,3 +34,30 @@ export async function createGroup(accessToken: string, name:string): Promise<Gro
     }
     return response.json() as Promise<Group>;
 }
+
+export async function listMyGroups(accessToken: string): Promise<Group[]> {
+    const response = await fetch(`${API_BASE}/groups`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });     
+    if (!response.ok) {
+        throw new Error('Failed to fetch groups');
+    }
+    return response.json() as Promise<Group[]>;
+}
+
+export async function joinGroup(accessToken: string, inviteCode: string): Promise<Group> {
+    const response = await fetch(`${API_BASE}/groups/join`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ invite_code: inviteCode })
+    });
+    if (!response.ok) {
+        throw new Error('Failed to join group');
+    }
+    return response.json() as Promise<Group>;
+}
