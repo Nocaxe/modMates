@@ -15,6 +15,9 @@ export function Header() {
             <button onClick={() => void navigate('/optimiser')} className="text-white py-2 px-4 rounded hover:bg-gray-700">
                 Optimiser
             </button>
+            <button onClick={() => void navigate('/groups')} className="text-white py-2 px-4 rounded hover:bg-gray-700">
+                Groups
+            </button>
             <button onClick={() => void navigate('/profile')} className="text-white py-2 px-4 rounded hover:bg-gray-700">
                 Profile
             </button>
