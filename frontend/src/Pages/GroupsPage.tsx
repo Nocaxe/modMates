@@ -1,23 +1,46 @@
 import {useAuth} from "../contexts/AuthContext";
 import {useEffect, useState} from "react";
-import {listMyGroups} from "../api/groups";
+import {listMyGroups, createGroup} from "../api/groups";
 import type {Group} from "../api/groups";
 
 export default function GroupsPage() {
     const {session} = useAuth()
     const [groups, setGroups] = useState<Group[]>([])
+    const [name, setName] = useState<string>("")
 
-    useEffect(() => {
+    function refreshGroups() {
         if (!session) return
-
         listMyGroups(session.access_token)
             .then(setGroups)
             .catch(console.error)
+    }
+
+    async function onCreate() {
+        if (!session) return
+        await createGroup(session.access_token, name)
+        setName("")
+        refreshGroups()
+    }
+
+    useEffect(() => {
+        refreshGroups()
     }, [session])
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen py-2">
             <div className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
+                <div className="mb-4">
+                    <input
+                        value={name}
+                        placeholder="Group name"
+                        onChange={(e) => setName(e.target.value)}
+                        className="text-black px-2 rounded"
+                    />
+                    <button onClick={() => void onCreate()} 
+                        className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
+                        Create Group
+                    </button>
+                </div>
                 {groups.map((group) => (
                     <div key={group.id} className="bg-white rounded-lg shadow-md p-6 mb-4 w-full max-w-md">
                         <h2 className="text-xl font-bold mb-2">{group.name}</h2>
@@ -29,3 +52,5 @@ export default function GroupsPage() {
         </div>
     )
 }
+
+
