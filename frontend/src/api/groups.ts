@@ -61,3 +61,27 @@ export async function joinGroup(accessToken: string, inviteCode: string): Promis
     }
     return response.json() as Promise<Group>;
 }
+
+export async function getGroupMembers(accessToken: string, groupId: number): Promise<GroupMemberInfo[]> {
+    const response = await fetch(`${API_BASE}/groups/${groupId}/members`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    }); 
+    if (!response.ok) {
+        throw new Error('Failed to fetch group members');
+    }
+    return response.json() as Promise<GroupMemberInfo[]>;
+}   
+
+export async function leaveGroup(accessToken: string, groupId: number): Promise<void> {
+    const response = await fetch(`${API_BASE}/groups/${groupId}/leave`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    if (!response.ok) {
+        throw new Error('Failed to leave group');
+    }
+}   
