@@ -10,7 +10,11 @@ import {
   saveTimetable,
   type TimetableData,
 } from "../api/timetable";
-import { optimise, type RankedSolution, type GroupMember } from "../api/optimise";
+import {
+  optimise,
+  type RankedSolution,
+  type GroupMember,
+} from "../api/optimise";
 import { getDummyGroupMembers } from "../data/dummyGroupMembers";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -71,6 +75,7 @@ export default function OptimiserPage() {
   const [solutions, setSolutions] = useState<RankedSolution[]>([]);
   const [selectedSolutionIndex, setSelectedSolutionIndex] = useState(0);
   const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
+  const [constraintError, setConstraintError] = useState<string | null>(null);
 
   // On mount: restore from localStorage immediately, then overwrite with API data if logged in
   useEffect(() => {
@@ -128,10 +133,15 @@ export default function OptimiserPage() {
     });
 
     if (result.solutions.length > 0 && result.solutions[0].score >= 0) {
+      setConstraintError(null);
       setSolutions(result.solutions);
       setSelectedSolutionIndex(0);
       setSelection(result.solutions[0].selection);
       setGroupMembers(group_members ?? null);
+    } else {
+      setConstraintError(
+        "No valid timetable found. Your hard constraints cannot all be satisfied. Try relaxing or removing some constraints.",
+      );
     }
   }
 
@@ -188,6 +198,11 @@ export default function OptimiserPage() {
       >
         Optimise
       </button>
+      {constraintError && (
+        <div className="flex items-start gap-2 px-4 py-3 bg-red-950 border border-red-700 rounded-xl text-red-300 text-sm">
+          <span>{constraintError}</span>
+        </div>
+      )}
       <SolutionPicker
         solutions={solutions}
         selectedIndex={selectedSolutionIndex}
