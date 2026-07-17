@@ -1,10 +1,18 @@
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import { useState, useEffect } from "react";
 import { vi, it, expect, beforeEach, afterEach } from "vitest";
-import TimetableUI, { type Module, type SelectionState } from "../../components/Timetable";
+import TimetableUI, {
+  type Module,
+  type SelectionState,
+} from "../../components/Timetable";
 import { BottomPanel } from "../../components/BottomPanel";
-import { getTimetable, saveTimetable, type TimetableData } from "../../api/timetable";
+import {
+  getTimetable,
+  saveTimetable,
+  type TimetableData,
+} from "../../api/timetable";
 import { useAuth } from "../../contexts/AuthContext";
+import type { Constraint } from "../../types/constraints";
 
 const { mockUseAuth, mockGetTimetable, mockSaveTimetable } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
@@ -38,12 +46,15 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
   const [locked, setLocked] = useState<Set<string>>(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      return new Set((raw ? (JSON.parse(raw) as TimetableData) : null)?.locked ?? []);
+      return new Set(
+        (raw ? (JSON.parse(raw) as TimetableData) : null)?.locked ?? [],
+      );
     } catch {
       return new Set();
     }
   });
-  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const [skipped, setSkipped] = useState<Set<string>>(() => new Set());
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
 
   useEffect(() => {
     if (!session) return;
@@ -63,6 +74,7 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
       locked: [...locked],
       skipped: [...skipped],
       modules: modules.map((m) => m.code),
+      constraints,
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
     if (!session) return;
@@ -70,7 +82,7 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
       saveTimetable(session.access_token, data).catch(() => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [selection, locked, skipped, modules, session]);
+  }, [selection, locked, skipped, modules, session, constraints]);
 
   return (
     <>
@@ -82,6 +94,8 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
         onSelectionChange={setSelection}
       />
       <BottomPanel
+        constraints={constraints}
+        onConstraintsChange={setConstraints}
         modules={modules}
         locked={locked}
         onLockedChange={setLocked}
@@ -102,10 +116,26 @@ const MOCK_MODULES: Module[] = [
     title: "Software Engineering",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Friday", start: 960, end: 1080, venue: "iCube Aud" }],
+        slots: [
+          {
+            classNo: "1",
+            day: "Friday",
+            start: 960,
+            end: 1080,
+            venue: "iCube Aud",
+          },
+        ],
       },
       Tutorial: {
-        slots: [{ classNo: "01", day: "Wednesday", start: 600, end: 660, venue: "COM1-0210" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Wednesday",
+            start: 600,
+            end: 660,
+            venue: "COM1-0210",
+          },
+        ],
       },
     },
   },
@@ -114,13 +144,31 @@ const MOCK_MODULES: Module[] = [
     title: "Data Structures and Algorithms",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Tuesday", start: 600, end: 720, venue: "LT19" }],
+        slots: [
+          { classNo: "1", day: "Tuesday", start: 600, end: 720, venue: "LT19" },
+        ],
       },
       Tutorial: {
-        slots: [{ classNo: "01", day: "Thursday", start: 540, end: 600, venue: "COM1-0210" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Thursday",
+            start: 540,
+            end: 600,
+            venue: "COM1-0210",
+          },
+        ],
       },
       Laboratory: {
-        slots: [{ classNo: "01", day: "Monday", start: 720, end: 840, venue: "COM1-B111" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Monday",
+            start: 720,
+            end: 840,
+            venue: "COM1-B111",
+          },
+        ],
       },
     },
   },
@@ -129,7 +177,15 @@ const MOCK_MODULES: Module[] = [
     title: "Effective Communication for Computing Professionals",
     lessons: {
       "Sectional Teaching": {
-        slots: [{ classNo: "01", day: "Monday", start: 600, end: 720, venue: "COM1-0201" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Monday",
+            start: 600,
+            end: 720,
+            venue: "COM1-0201",
+          },
+        ],
       },
     },
   },
@@ -138,10 +194,20 @@ const MOCK_MODULES: Module[] = [
     title: "Linear Algebra I",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Monday", start: 480, end: 600, venue: "LT34" }],
+        slots: [
+          { classNo: "1", day: "Monday", start: 480, end: 600, venue: "LT34" },
+        ],
       },
       Tutorial: {
-        slots: [{ classNo: "01", day: "Wednesday", start: 480, end: 540, venue: "S17-0304" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Wednesday",
+            start: 480,
+            end: 540,
+            venue: "S17-0304",
+          },
+        ],
       },
     },
   },
@@ -150,10 +216,20 @@ const MOCK_MODULES: Module[] = [
     title: "Design and Analysis of Algorithms",
     lessons: {
       Lecture: {
-        slots: [{ classNo: "1", day: "Tuesday", start: 480, end: 600, venue: "LT19" }],
+        slots: [
+          { classNo: "1", day: "Tuesday", start: 480, end: 600, venue: "LT19" },
+        ],
       },
       Tutorial: {
-        slots: [{ classNo: "01", day: "Friday", start: 600, end: 660, venue: "COM1-0210" }],
+        slots: [
+          {
+            classNo: "01",
+            day: "Friday",
+            start: 600,
+            end: 660,
+            venue: "COM1-0210",
+          },
+        ],
       },
     },
   },
@@ -171,7 +247,11 @@ beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
   mockUseAuth.mockReturnValue({ session: null });
-  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [], skipped: [] });
+  mockGetTimetable.mockResolvedValue({
+    selection: {},
+    locked: [],
+    skipped: [],
+  });
   mockSaveTimetable.mockResolvedValue(undefined);
 });
 
@@ -303,7 +383,11 @@ it("applies selection and locked state from API when it returns non-empty data",
 
 it("does not update state when API returns an empty selection", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
-  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [], skipped: [] });
+  mockGetTimetable.mockResolvedValue({
+    selection: {},
+    locked: [],
+    skipped: [],
+  });
 
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
@@ -378,9 +462,7 @@ it("changes lock button label to Unlock after clicking Lock", async () => {
   const lockButton = screen.getAllByRole("button", { name: /^Lock / })[0];
   fireEvent.click(lockButton);
 
-  expect(
-    screen.getByRole("button", { name: /^Unlock / }),
-  ).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /^Unlock / })).toBeInTheDocument();
 });
 
 it("reverts Unlock back to Lock when clicked again", async () => {

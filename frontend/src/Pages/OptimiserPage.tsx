@@ -17,6 +17,7 @@ import {
 } from "../api/optimise";
 import { listMyGroups, getOptimiserMembers, type Group } from "../api/groups";
 import { useAuth } from "../contexts/AuthContext";
+import type { Constraint } from "../types/constraints";
 
 const LS_KEY = "modmates-timetable";
 
@@ -30,9 +31,16 @@ function loadFromLocalStorage(): TimetableData {
       locked: parsed?.locked ?? [],
       skipped: parsed?.skipped ?? [],
       modules: parsed?.modules ?? [],
+      constraints: parsed?.constraints ?? [],
     };
   } catch {
-    return { selection: {}, locked: [], skipped: [], modules: [] };
+    return {
+      selection: {},
+      locked: [],
+      skipped: [],
+      modules: [],
+      constraints: [],
+    };
   }
 }
 
@@ -75,7 +83,9 @@ export default function OptimiserPage() {
     () => new Set(loadFromLocalStorage().skipped),
   );
 
-  const [constraintPayload, setConstraintPayload] = useState<object[]>([]);
+  const [constraints, setConstraints] = useState<Constraint[]>(
+    () => loadFromLocalStorage().constraints,
+  );
   const [solutions, setSolutions] = useState<RankedSolution[]>([]);
   const [selectedSolutionIndex, setSelectedSolutionIndex] = useState(0);
   const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
@@ -99,6 +109,7 @@ export default function OptimiserPage() {
           setSelection(data.selection);
           setLocked(new Set(data.locked));
           setSkipped(new Set<string>(data.skipped ?? []));
+          setConstraints(data.constraints ?? []);
         }
         restoreModules(data.modules, (restored) => {
           setModules(restored);
@@ -118,6 +129,7 @@ export default function OptimiserPage() {
       locked: [...locked],
       skipped: [...skipped],
       modules: modules.map((m) => m.code),
+      constraints,
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
     if (!session) return;
@@ -125,11 +137,9 @@ export default function OptimiserPage() {
       saveTimetable(session.access_token, data).catch(() => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [selection, locked, skipped, modules, session]);
+  }, [selection, locked, skipped, modules, constraints, session]);
 
-  const hasGroupOverlap = (constraintPayload as Array<{ type?: string }>).some(
-    (c) => c.type === "group_overlap",
-  );
+  const hasGroupOverlap = constraints.some((c) => c.type === "group_overlap");
   const effectiveGroupId = selectedGroupId ?? groups[0]?.id ?? null;
 
   async function handleOptimise() {
@@ -146,7 +156,8 @@ export default function OptimiserPage() {
       selection,
       locked: [...locked],
       skipped: [...skipped],
-      constraints: constraintPayload,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      constraints: constraints.map(({ id: _id, ...rest }) => rest),
       group_members,
     });
 
@@ -266,7 +277,8 @@ export default function OptimiserPage() {
         />
       )}
       <BottomPanel
-        onConstraintsChange={setConstraintPayload}
+        constraints={constraints}
+        onConstraintsChange={setConstraints}
         onAddModule={handleAddModule}
         onRemoveModule={handleRemoveModule}
         modules={modules}

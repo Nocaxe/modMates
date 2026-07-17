@@ -27,6 +27,7 @@ class UserTimetable(Base):
     locked = Column(JSONB, nullable=False, server_default=text("'[]'"))
     skipped = Column(JSONB, nullable=False, server_default=text("'[]'"))
     modules = Column(JSONB, nullable=False, server_default=text("'[]'"))
+    constraints = Column(JSONB, nullable=False, server_default=text("'[]'"))
     updated_at = Column(DateTime(timezone=True), server_default=text("now()"))
 
 

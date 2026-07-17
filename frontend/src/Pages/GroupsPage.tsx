@@ -1,5 +1,5 @@
 import { useAuth } from "../contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   listMyGroups,
   createGroup,
@@ -14,10 +14,10 @@ export default function GroupsPage() {
   const [name, setName] = useState<string>("");
   const [inviteCode, setInviteCode] = useState<string>("");
 
-  function refreshGroups() {
+  const refreshGroups = useCallback(() => {
     if (!session) return;
     listMyGroups(session.access_token).then(setGroups).catch(console.error);
-  }
+  }, [session]);
 
   async function onCreate() {
     if (!session) return;
@@ -41,7 +41,7 @@ export default function GroupsPage() {
 
   useEffect(() => {
     refreshGroups();
-  }, [session]);
+  }, [refreshGroups]);
 
   return (
     <div className="flex flex-col items-center gap-6 px-4 py-8">

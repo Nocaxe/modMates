@@ -3,6 +3,7 @@ import { ConstraintPanel } from "./constraints/ConstraintPanel";
 import { ModuleSearchDropdown } from "./ModuleSearchDropdown";
 import type { Module } from "./Timetable";
 import { LockIcon } from "./Timetable";
+import type { Constraint } from "../types/constraints";
 
 type Tab = "modules" | "constraints";
 
@@ -28,7 +29,8 @@ function AttendingIcon({ attending }: { attending: boolean }) {
 }
 
 interface Props {
-  onConstraintsChange?: (payload: object[]) => void;
+  constraints: Constraint[];
+  onConstraintsChange: React.Dispatch<React.SetStateAction<Constraint[]>>;
   onAddModule: (module: Module) => void;
   onRemoveModule: (moduleCode: string) => void;
   modules: Module[];
@@ -39,6 +41,7 @@ interface Props {
 }
 
 export function BottomPanel({
+  constraints,
   onConstraintsChange,
   onAddModule,
   onRemoveModule,
@@ -182,7 +185,7 @@ export function BottomPanel({
           />
         </div>
         <div className={active === "constraints" ? "" : "hidden"}>
-          <ConstraintPanel onChange={onConstraintsChange} />
+          <ConstraintPanel constraints={constraints} onConstraintsChange={onConstraintsChange} />
         </div>
       </div>
     </div>

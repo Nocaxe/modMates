@@ -9,6 +9,7 @@ class TimetableBody(BaseModel):
     locked: list[str]
     skipped: list[str] = []
     modules: list[str] = []
+    constraints: list[dict] = []
 
 class FriendRequestCreate(BaseModel):
     '''Request body schema for creating a friend request.'''

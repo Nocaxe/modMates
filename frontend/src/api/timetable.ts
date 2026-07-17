@@ -1,8 +1,11 @@
+import type { Constraint } from "../types/constraints";
+
 export type TimetableData = {
   selection: Record<string, Record<string, string>>;
   locked: string[];
   skipped: string[];
   modules: string[];
+  constraints: Constraint[];
 };
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
