@@ -2,6 +2,7 @@ import { render, screen, act, fireEvent } from "@testing-library/react";
 import { useState, useEffect } from "react";
 import { vi, it, expect, beforeEach, afterEach } from "vitest";
 import TimetableUI, { type Module, type SelectionState } from "../../components/Timetable";
+import { BottomPanel } from "../../components/BottomPanel";
 import { getTimetable, saveTimetable, type TimetableData } from "../../api/timetable";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -42,6 +43,7 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
       return new Set();
     }
   });
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!session) return;
@@ -59,6 +61,7 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
     const data: TimetableData = {
       selection,
       locked: [...locked],
+      skipped: [...skipped],
       modules: modules.map((m) => m.code),
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
@@ -67,16 +70,27 @@ function TimetableWrapper({ modules = [] }: { modules?: Module[] }) {
       saveTimetable(session.access_token, data).catch(() => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [selection, locked, modules, session]);
+  }, [selection, locked, skipped, modules, session]);
 
   return (
-    <TimetableUI
-      modules={modules}
-      selection={selection}
-      locked={locked}
-      onSelectionChange={setSelection}
-      onLockedChange={setLocked}
-    />
+    <>
+      <TimetableUI
+        modules={modules}
+        selection={selection}
+        locked={locked}
+        skipped={skipped}
+        onSelectionChange={setSelection}
+      />
+      <BottomPanel
+        modules={modules}
+        locked={locked}
+        onLockedChange={setLocked}
+        skipped={skipped}
+        onSkippedChange={setSkipped}
+        onAddModule={() => {}}
+        onRemoveModule={() => {}}
+      />
+    </>
   );
 }
 
@@ -157,7 +171,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
   mockUseAuth.mockReturnValue({ session: null });
-  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [] });
+  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [], skipped: [] });
   mockSaveTimetable.mockResolvedValue(undefined);
 });
 
@@ -201,6 +215,7 @@ it("reads saved selection from localStorage on mount", () => {
   const saved = {
     selection: FULL_DEFAULT_SELECTION,
     locked: [],
+    skipped: [],
   };
   localStorage.setItem(LS_KEY, JSON.stringify(saved));
 
@@ -215,13 +230,14 @@ it("reads locked state from localStorage on mount", () => {
   const saved = {
     selection: FULL_DEFAULT_SELECTION,
     locked: ["MA2001|Lecture"],
+    skipped: [],
   };
   localStorage.setItem(LS_KEY, JSON.stringify(saved));
 
   render(<TimetableWrapper modules={MOCK_MODULES} />);
 
   expect(
-    screen.getByRole("button", { name: "Unlock slot" }),
+    screen.getByRole("button", { name: "Unlock Lecture" }),
   ).toBeInTheDocument();
 });
 
@@ -243,7 +259,7 @@ it("persists locked state to localStorage after locking a slot", async () => {
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
-  const lockButtons = screen.getAllByRole("button", { name: "Lock slot" });
+  const lockButtons = screen.getAllByRole("button", { name: /^Lock / });
   fireEvent.click(lockButtons[0]);
 
   const raw = localStorage.getItem(LS_KEY);
@@ -274,19 +290,20 @@ it("applies selection and locked state from API when it returns non-empty data",
   mockGetTimetable.mockResolvedValue({
     selection: FULL_DEFAULT_SELECTION,
     locked: ["CS2103T|Lecture"],
+    skipped: [],
   });
 
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
   expect(
-    screen.getByRole("button", { name: "Unlock slot" }),
+    screen.getByRole("button", { name: "Unlock Lecture" }),
   ).toBeInTheDocument();
 });
 
 it("does not update state when API returns an empty selection", async () => {
   mockUseAuth.mockReturnValue({ session: TEST_SESSION });
-  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [] });
+  mockGetTimetable.mockResolvedValue({ selection: {}, locked: [], skipped: [] });
 
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
@@ -354,29 +371,29 @@ it("does not call saveTimetable even after debounce when not authenticated", asy
 
 // Lock toggling
 
-it("changes lock button label to Unlock slot after clicking Lock slot", async () => {
+it("changes lock button label to Unlock after clicking Lock", async () => {
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
-  const lockButton = screen.getAllByRole("button", { name: "Lock slot" })[0];
+  const lockButton = screen.getAllByRole("button", { name: /^Lock / })[0];
   fireEvent.click(lockButton);
 
   expect(
-    screen.getByRole("button", { name: "Unlock slot" }),
+    screen.getByRole("button", { name: /^Unlock / }),
   ).toBeInTheDocument();
 });
 
-it("reverts Unlock slot back to Lock slot when clicked again", async () => {
+it("reverts Unlock back to Lock when clicked again", async () => {
   render(<TimetableWrapper modules={MOCK_MODULES} />);
   await act(async () => {});
 
-  const lockButton = screen.getAllByRole("button", { name: "Lock slot" })[0];
+  const lockButton = screen.getAllByRole("button", { name: /^Lock / })[0];
   fireEvent.click(lockButton);
 
-  const unlockButton = screen.getByRole("button", { name: "Unlock slot" });
+  const unlockButton = screen.getByRole("button", { name: /^Unlock / });
   fireEvent.click(unlockButton);
 
   expect(
-    screen.queryByRole("button", { name: "Unlock slot" }),
+    screen.queryByRole("button", { name: /^Unlock / }),
   ).not.toBeInTheDocument();
 });

@@ -28,6 +28,7 @@ class OptimiseRequest(BaseModel):
     modules: list[ModuleIn]
     selection: dict[str, dict[str, str]]
     locked: list[str]
+    skipped: list[str] = []
     constraints: list[dict[str, Any]]
     group_members: list[GroupMember] = []  # empty = individual mode
 
@@ -51,6 +52,7 @@ async def optimise(body: OptimiseRequest):
         set(body.locked),
         body.constraints,
         group_members=group_members_raw,
+        skipped=set(body.skipped),
         n=5,
     )
 

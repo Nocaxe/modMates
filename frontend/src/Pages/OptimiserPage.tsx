@@ -10,12 +10,12 @@ import {
   saveTimetable,
   type TimetableData,
 } from "../api/timetable";
-import { optimise, type RankedSolution, type GroupMember } from "../api/optimise";
 import {
-  listMyGroups,
-  getOptimiserMembers,
-  type Group,
-} from "../api/groups";
+  optimise,
+  type RankedSolution,
+  type GroupMember,
+} from "../api/optimise";
+import { listMyGroups, getOptimiserMembers, type Group } from "../api/groups";
 import { useAuth } from "../contexts/AuthContext";
 
 const LS_KEY = "modmates-timetable";
@@ -28,10 +28,11 @@ function loadFromLocalStorage(): TimetableData {
     return {
       selection: parsed?.selection ?? {},
       locked: parsed?.locked ?? [],
+      skipped: parsed?.skipped ?? [],
       modules: parsed?.modules ?? [],
     };
   } catch {
-    return { selection: {}, locked: [], modules: [] };
+    return { selection: {}, locked: [], skipped: [], modules: [] };
   }
 }
 
@@ -70,6 +71,9 @@ export default function OptimiserPage() {
   const [locked, setLocked] = useState<Set<string>>(
     () => new Set(loadFromLocalStorage().locked),
   );
+  const [skipped, setSkipped] = useState<Set<string>>(
+    () => new Set(loadFromLocalStorage().skipped),
+  );
 
   const [constraintPayload, setConstraintPayload] = useState<object[]>([]);
   const [solutions, setSolutions] = useState<RankedSolution[]>([]);
@@ -94,6 +98,7 @@ export default function OptimiserPage() {
         if (Object.keys(data.selection).length > 0) {
           setSelection(data.selection);
           setLocked(new Set(data.locked));
+          setSkipped(new Set<string>(data.skipped ?? []));
         }
         restoreModules(data.modules, (restored) => {
           setModules(restored);
@@ -101,7 +106,9 @@ export default function OptimiserPage() {
         });
       })
       .catch(() => {});
-    listMyGroups(session.access_token).then(setGroups).catch(() => {});
+    listMyGroups(session.access_token)
+      .then(setGroups)
+      .catch(() => {});
   }, [session]);
 
   // Save to localStorage immediately, debounce API save for logged-in users
@@ -109,6 +116,7 @@ export default function OptimiserPage() {
     const data: TimetableData = {
       selection,
       locked: [...locked],
+      skipped: [...skipped],
       modules: modules.map((m) => m.code),
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
@@ -117,7 +125,7 @@ export default function OptimiserPage() {
       saveTimetable(session.access_token, data).catch(() => {});
     }, 1000);
     return () => clearTimeout(timer);
-  }, [selection, locked, modules, session]);
+  }, [selection, locked, skipped, modules, session]);
 
   const hasGroupOverlap = (constraintPayload as Array<{ type?: string }>).some(
     (c) => c.type === "group_overlap",
@@ -137,6 +145,7 @@ export default function OptimiserPage() {
       modules,
       selection,
       locked: [...locked],
+      skipped: [...skipped],
       constraints: constraintPayload,
       group_members,
     });
@@ -184,6 +193,13 @@ export default function OptimiserPage() {
       });
       return next;
     });
+    setSkipped((prev) => {
+      const next = new Set(prev);
+      [...next].forEach((key) => {
+        if (key.startsWith(`${moduleCode}|`)) next.delete(key);
+      });
+      return next;
+    });
     setSolutions([]);
     setSelectedSolutionIndex(0);
     setGroupMembers(null);
@@ -195,8 +211,8 @@ export default function OptimiserPage() {
         modules={modules}
         selection={selection}
         locked={locked}
+        skipped={skipped}
         onSelectionChange={setSelection}
-        onLockedChange={setLocked}
       />
       {hasGroupOverlap && (
         <div className="flex items-center gap-3 px-4 py-3 border border-gray-700 rounded-xl text-sm">
@@ -254,6 +270,10 @@ export default function OptimiserPage() {
         onAddModule={handleAddModule}
         onRemoveModule={handleRemoveModule}
         modules={modules}
+        locked={locked}
+        onLockedChange={setLocked}
+        skipped={skipped}
+        onSkippedChange={setSkipped}
       />
     </div>
   );

@@ -44,13 +44,17 @@ def _compute_score(
     sel: dict,
     classno_to_slots: dict,
     members_for_rank: list[dict] | None = None,
+    skipped: frozenset = frozenset(),
 ) -> float:
     """Compute normalised score [0, 1] based on fraction of soft-constraint weight satisfied."""
     if not soft_constraints:
         return 1.0
 
+    # Exclude skipped lesson types from all constraint evaluation
+    sel_active = {k: v for k, v in sel.items() if f"{k[0]}|{k[1]}" not in skipped}
+
     assigned: list = []
-    for key, cno in sel.items():
+    for key, cno in sel_active.items():
         assigned.extend(classno_to_slots[key][cno])
 
     slots_by_day: dict[str, list] = {d: [] for d in DAYS}
@@ -69,13 +73,13 @@ def _compute_score(
         fraction = 0.0  # partial credit in [0, 1]
 
         if t in ("earliest_start", "latest_end", "blocked_slot"):
-            # Fraction of lesson types whose chosen class satisfies the constraint
-            total_keys = len(sel)
+            # Fraction of non-skipped lesson types whose chosen class satisfies the constraint
+            total_keys = len(sel_active)
             if total_keys == 0:
                 fraction = 1.0
             else:
                 fraction = sum(
-                    1 for k, cno in sel.items()
+                    1 for k, cno in sel_active.items()
                     if _option_passes_hard(classno_to_slots[k][cno], c)
                 ) / total_keys
 
@@ -133,9 +137,9 @@ def _compute_score(
             matched = 0
             for member_flat in (members_for_rank or []):
                 for key, target_cno in member_flat.items():
-                    if key in sel:
+                    if key in sel_active:
                         total_pairs += 1
-                        if sel[key] == target_cno:
+                        if sel_active[key] == target_cno:
                             matched += 1
             fraction = matched / total_pairs if total_pairs > 0 else 1.0
 
@@ -151,6 +155,7 @@ def _build_opt(
     constraints: list[dict],
     members_for_rank: list[dict],
     extra_blocking: list,
+    skipped: frozenset = frozenset(),
 ):
     """Build and return a configured Z3 Optimize instance plus indexing dicts.
 
@@ -204,7 +209,7 @@ def _build_opt(
     hard = [c for c in constraints if c.get("kind") == "hard"]
     soft = [c for c in constraints if c.get("kind") == "soft"]
 
-    # Hard constraints: forbid options that violate them
+    # Hard constraints: forbid options that violate them (skipped lesson types are exempt)
     for c in hard:
         t = c.get("type")
         if t == "free_days_count":
@@ -214,6 +219,7 @@ def _build_opt(
                 on_day = [
                     var == i
                     for key, var in z3_vars.items()
+                    if f"{key[0]}|{key[1]}" not in skipped
                     for i, cno in enumerate(index_to_classno[key])
                     if any(s.day == day for s in classno_to_slots[key][cno])
                 ]
@@ -222,11 +228,13 @@ def _build_opt(
             opt.add(z3.Sum(day_free_flags) >= required)
         else:
             for key, var in z3_vars.items():
+                if f"{key[0]}|{key[1]}" in skipped:
+                    continue
                 for i, cno in enumerate(index_to_classno[key]):
                     if not _option_passes_hard(classno_to_slots[key][cno], c):
                         opt.add(var != i)
 
-    # Soft constraints: maximise weighted satisfaction
+    # Soft constraints: maximise weighted satisfaction (skipped lesson types are exempt)
     _WEIGHT_MAP = [1, 3, 10, 30, 100]
     for c in soft:
         t = c["type"]
@@ -234,6 +242,8 @@ def _build_opt(
 
         if t in ("earliest_start", "latest_end", "blocked_slot"):
             for key, var in z3_vars.items():
+                if f"{key[0]}|{key[1]}" in skipped:
+                    continue
                 for i, cno in enumerate(index_to_classno[key]):
                     if not _option_passes_hard(classno_to_slots[key][cno], c):
                         opt.add_soft(var != i, weight=w)
@@ -243,6 +253,7 @@ def _build_opt(
                 not_on_day = [
                     var != i
                     for key, var in z3_vars.items()
+                    if f"{key[0]}|{key[1]}" not in skipped
                     for i, cno in enumerate(index_to_classno[key])
                     if any(s.day == day for s in classno_to_slots[key][cno])
                 ]
@@ -254,6 +265,7 @@ def _build_opt(
                 not_on_day = [
                     var != i
                     for key, var in z3_vars.items()
+                    if f"{key[0]}|{key[1]}" not in skipped
                     for i, cno in enumerate(index_to_classno[key])
                     if any(s.day == day for s in classno_to_slots[key][cno])
                 ]
@@ -267,6 +279,7 @@ def _build_opt(
                 blocking = [
                     var == i
                     for key, var in z3_vars.items()
+                    if f"{key[0]}|{key[1]}" not in skipped
                     for i, cno in enumerate(index_to_classno[key])
                     for s in classno_to_slots[key][cno]
                     if s.day == day and s.start < start_t + dur and s.end > start_t
@@ -280,6 +293,7 @@ def _build_opt(
                 day_opts = [
                     (key, i, [s for s in classno_to_slots[key][cno] if s.day == day])
                     for key, _ in z3_vars.items()
+                    if f"{key[0]}|{key[1]}" not in skipped
                     for i, cno in enumerate(index_to_classno[key])
                     if any(s.day == day for s in classno_to_slots[key][cno])
                 ]
@@ -306,9 +320,11 @@ def _build_opt(
                             )
 
         elif t == "group_overlap":
-            # Reward matching each group member's class selection for shared modules
+            # Reward matching each group member's class selection for shared non-skipped modules
             for member_flat in members_for_rank:
                 for key, var in z3_vars.items():
+                    if f"{key[0]}|{key[1]}" in skipped:
+                        continue
                     target_cno = member_flat.get(key)
                     if target_cno and target_cno in index_to_classno[key]:
                         target_idx = index_to_classno[key].index(target_cno)
@@ -338,9 +354,11 @@ def solve_top_n(
     locked: set[str],
     constraints: list[dict],
     group_members: list[dict] | None = None,
+    skipped: set[str] | None = None,
     n: int = 5,
 ) -> list[dict]:
     """Return up to n distinct ranked solutions, best first."""
+    skipped_frozen: frozenset = frozenset(skipped) if skipped else frozenset()
     results: list[dict] = []
     blocking_history: list = []
     soft = [c for c in constraints if c.get("kind") == "soft"]
@@ -359,7 +377,8 @@ def solve_top_n(
                 })
 
         opt, z3_vars, idx2cno, cno2slots, _ = _build_opt(
-            modules, selection, locked, constraints, members_for_rank, blocking_history
+            modules, selection, locked, constraints, members_for_rank, blocking_history,
+            skipped=skipped_frozen,
         )
 
         sel_keyed = _solve_once(opt, z3_vars, idx2cno)
@@ -371,7 +390,7 @@ def solve_top_n(
         for (code, lt), cno in sel_keyed.items():
             sel.setdefault(code, {})[lt] = cno
 
-        score = _compute_score(soft, sel_keyed, cno2slots, members_for_rank)
+        score = _compute_score(soft, sel_keyed, cno2slots, members_for_rank, skipped=skipped_frozen)
         results.append({"selection": sel, "score": score})
 
         # Block any assignment that is timeslot-equivalent to this one.

@@ -18,6 +18,7 @@ export async function optimise(body: {
   modules: object[];
   selection: Record<string, Record<string, string>>;
   locked: string[];
+  skipped?: string[];
   constraints: object[];
   group_members?: GroupMember[];
 }): Promise<OptimiseResponse> {

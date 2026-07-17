@@ -32,8 +32,8 @@ const USER_SELECTION: SelectionState = {
 };
 
 const MEMBERS: GroupMember[] = [
-  { name: "Alice (demo)", ranked_selections: [{ CS2040S: { Lecture: "1" } }] },
-  { name: "Bob (demo)", ranked_selections: [{ CS2040S: { Lecture: "2" } }] },
+  { name: "Alice", ranked_selections: [{ CS2040S: { Lecture: "1" } }] },
+  { name: "Bob", ranked_selections: [{ CS2040S: { Lecture: "2" } }] },
 ];
 
 it("renders nothing when there are no group members", () => {
@@ -59,7 +59,7 @@ it("renders the group overlap heading and member names in the subtitle", () => {
   );
   expect(screen.getByText("Group overlap")).toBeInTheDocument();
   expect(
-    screen.getByText(/Shared classes with Alice \(demo\), Bob \(demo\)/),
+    screen.getByText(/Shared classes with Alice, Bob/),
   ).toBeInTheDocument();
 });
 
@@ -124,7 +124,7 @@ it("marks a member as overlapping when their class matches the user's", () => {
   );
   const badge = screen.getByText("✓ Alice");
   expect(badge).toBeInTheDocument();
-  expect(badge).toHaveAttribute("title", "Alice (demo) is in the same class");
+  expect(badge).toHaveAttribute("title", "Alice is in the same class");
 });
 
 it("marks a member as not overlapping when their class differs from the user's", () => {
@@ -138,24 +138,7 @@ it("marks a member as not overlapping when their class differs from the user's",
   );
   const badge = screen.getByText("✗ Bob");
   expect(badge).toBeInTheDocument();
-  expect(badge).toHaveAttribute("title", "Bob (demo) is in a different class");
-});
-
-it("strips the (demo) suffix from member names in overlap badges", () => {
-  render(
-    <GroupOverlapPanel
-      modules={[CS2040S]}
-      userSelection={USER_SELECTION}
-      groupMembers={MEMBERS}
-      rankIndex={0}
-    />,
-  );
-  // The subtitle legitimately shows the full "(demo)" names — only the
-  // per-lesson overlap badges should have the suffix stripped.
-  expect(screen.getByText("✓ Alice")).toBeInTheDocument();
-  expect(screen.getByText("✗ Bob")).toBeInTheDocument();
-  expect(screen.queryByText("✓ Alice (demo)")).not.toBeInTheDocument();
-  expect(screen.queryByText("✗ Bob (demo)")).not.toBeInTheDocument();
+  expect(badge).toHaveAttribute("title", "Bob is in a different class");
 });
 
 it("clamps rankIndex to a member's last ranked selection when it exceeds the array length", () => {

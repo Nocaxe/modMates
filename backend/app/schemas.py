@@ -7,6 +7,7 @@ class TimetableBody(BaseModel):
 
     selection: dict[str, dict[str, str]]
     locked: list[str]
+    skipped: list[str] = []
     modules: list[str] = []
 
 class FriendRequestCreate(BaseModel):

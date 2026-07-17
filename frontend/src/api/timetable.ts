@@ -1,6 +1,7 @@
 export type TimetableData = {
   selection: Record<string, Record<string, string>>;
   locked: string[];
+  skipped: string[];
   modules: string[];
 };
 
