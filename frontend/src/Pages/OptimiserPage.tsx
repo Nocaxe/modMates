@@ -10,12 +10,12 @@ import {
   saveTimetable,
   type TimetableData,
 } from "../api/timetable";
+import { optimise, type RankedSolution, type GroupMember } from "../api/optimise";
 import {
-  optimise,
-  type RankedSolution,
-  type GroupMember,
-} from "../api/optimise";
-import { getDummyGroupMembers } from "../data/dummyGroupMembers";
+  listMyGroups,
+  getOptimiserMembers,
+  type Group,
+} from "../api/groups";
 import { useAuth } from "../contexts/AuthContext";
 
 const LS_KEY = "modmates-timetable";
@@ -76,6 +76,8 @@ export default function OptimiserPage() {
   const [selectedSolutionIndex, setSelectedSolutionIndex] = useState(0);
   const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
   const [constraintError, setConstraintError] = useState<string | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
   // On mount: restore from localStorage immediately, then overwrite with API data if logged in
   useEffect(() => {
@@ -99,6 +101,7 @@ export default function OptimiserPage() {
         });
       })
       .catch(() => {});
+    listMyGroups(session.access_token).then(setGroups).catch(() => {});
   }, [session]);
 
   // Save to localStorage immediately, debounce API save for logged-in users
@@ -116,13 +119,19 @@ export default function OptimiserPage() {
     return () => clearTimeout(timer);
   }, [selection, locked, modules, session]);
 
+  const hasGroupOverlap = (constraintPayload as Array<{ type?: string }>).some(
+    (c) => c.type === "group_overlap",
+  );
+  const effectiveGroupId = selectedGroupId ?? groups[0]?.id ?? null;
+
   async function handleOptimise() {
-    const hasGroupOverlap = (
-      constraintPayload as Array<{ type?: string }>
-    ).some((c) => c.type === "group_overlap");
-    const group_members = hasGroupOverlap
-      ? getDummyGroupMembers(modules, selection)
-      : undefined;
+    let group_members: GroupMember[] | undefined;
+    if (hasGroupOverlap && session && effectiveGroupId !== null) {
+      group_members = await getOptimiserMembers(
+        session.access_token,
+        effectiveGroupId,
+      );
+    }
 
     const result = await optimise({
       modules,
@@ -189,6 +198,30 @@ export default function OptimiserPage() {
         onSelectionChange={setSelection}
         onLockedChange={setLocked}
       />
+      {hasGroupOverlap && (
+        <div className="flex items-center gap-3 px-4 py-3 border border-gray-700 rounded-xl text-sm">
+          <span className="text-gray-300 font-medium shrink-0">Group:</span>
+          {!session ? (
+            <span className="text-gray-400">Log in to use group overlap.</span>
+          ) : groups.length === 0 ? (
+            <span className="text-gray-400">
+              Join a group first to use group overlap.
+            </span>
+          ) : (
+            <select
+              value={effectiveGroupId ?? ""}
+              onChange={(e) => setSelectedGroupId(Number(e.target.value))}
+              className="bg-gray-800 text-white border border-gray-600 rounded-lg px-2 py-1 flex-1"
+            >
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
       <button
         type="button"
         onClick={() => {

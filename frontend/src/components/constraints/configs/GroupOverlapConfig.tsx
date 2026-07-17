@@ -8,10 +8,7 @@ interface Props {
 export function GroupOverlapConfig({ c: _ }: Props) {
   return (
     <div className="flex items-center gap-1.5 text-sm text-gray-600">
-      <span>Match classes with</span>
-      <span className="font-medium text-gray-800">
-        Alice (demo), Bob (demo)
-      </span>
+      <span>Match classes with your selected group</span>
     </div>
   );
 }

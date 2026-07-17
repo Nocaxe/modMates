@@ -117,7 +117,7 @@ export function GroupOverlapPanel({
                       }`}
                     >
                       {overlaps ? "✓" : "✗"}{" "}
-                      {name.replace(" (demo)", "")}
+                      {name}
                     </span>
                   ))}
                 </div>
