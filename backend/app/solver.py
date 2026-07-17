@@ -33,6 +33,9 @@ def _option_passes_hard(slots, c: dict) -> bool:
             and s.end > _parse(c["startTime"])
             for s in slots
         )
+    if t == "specific_free_days":
+        days = set(c.get("days", []))
+        return not any(s.day in days for s in slots)
     return True
 
 
@@ -203,10 +206,25 @@ def _build_opt(
 
     # Hard constraints: forbid options that violate them
     for c in hard:
-        for key, var in z3_vars.items():
-            for i, cno in enumerate(index_to_classno[key]):
-                if not _option_passes_hard(classno_to_slots[key][cno], c):
-                    opt.add(var != i)
+        t = c.get("type")
+        if t == "free_days_count":
+            required = c.get("count", 1)
+            day_free_flags = []
+            for day in DAYS:
+                on_day = [
+                    var == i
+                    for key, var in z3_vars.items()
+                    for i, cno in enumerate(index_to_classno[key])
+                    if any(s.day == day for s in classno_to_slots[key][cno])
+                ]
+                day_free = z3.Not(z3.Or(on_day)) if on_day else z3.BoolVal(True)
+                day_free_flags.append(z3.If(day_free, 1, 0))
+            opt.add(z3.Sum(day_free_flags) >= required)
+        else:
+            for key, var in z3_vars.items():
+                for i, cno in enumerate(index_to_classno[key]):
+                    if not _option_passes_hard(classno_to_slots[key][cno], c):
+                        opt.add(var != i)
 
     # Soft constraints: maximise weighted satisfaction
     _WEIGHT_MAP = [1, 3, 10, 30, 100]
