@@ -51,37 +51,35 @@ export function BottomPanel({ onConstraintsChange, onAddModule, onRemoveModule, 
 
       {/* Content */}
       <div className="p-4 min-h-96 overflow-y-auto">
-        {active === "modules" && (
-          <>
-            {modules.length > 0 && (
-              <ul className="mb-3 flex flex-col gap-2">
-                {modules.map((module) => (
-                  <li key={module.code} className="flex items-center justify-between gap-2">
-                    <span className ="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-blue-400 font-semibold text-sm shrink-0">{module.code}</span>
-                      <span className="text-white text-sm truncate">{module.title}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveModule(module.code)}
-                      className="text-gray-400 hover:text-red-400 ml-3 text-xl leading-none shrink-0"
-                      aria-label={`Remove ${module.code}`}
-                    >
-                      x
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          <ModuleSearchDropdown 
-            onAddModule={onAddModule} 
+        <div className={active === "modules" ? "" : "hidden"}>
+          {modules.length > 0 && (
+            <ul className="mb-3 flex flex-col gap-2">
+              {modules.map((module) => (
+                <li key={module.code} className="flex items-center justify-between gap-2">
+                  <span className ="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-blue-400 font-semibold text-sm shrink-0">{module.code}</span>
+                    <span className="text-white text-sm truncate">{module.title}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveModule(module.code)}
+                    className="text-gray-400 hover:text-red-400 ml-3 text-xl leading-none shrink-0"
+                    aria-label={`Remove ${module.code}`}
+                  >
+                    x
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <ModuleSearchDropdown
+            onAddModule={onAddModule}
             addedModuleCodes={addedModuleCodes}
           />
-          </>
-        )}
-        {active === "constraints" && (
+        </div>
+        <div className={active === "constraints" ? "" : "hidden"}>
           <ConstraintPanel onChange={onConstraintsChange} />
-        )}
+        </div>
       </div>
     </div>
   );
