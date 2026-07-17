@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Any
-from app.solver import solve, solve_top_n
+from app.solver import solve_top_n
 
 router = APIRouter()
 
