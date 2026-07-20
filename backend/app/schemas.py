@@ -66,3 +66,27 @@ class GroupMemberOut(BaseModel):
 
     name: str
     ranked_selections: list[dict[str, dict[str, str]]]
+
+class JointOptimiseRequest(BaseModel):
+    group_id: int
+
+class JointMemberResult(BaseModel):
+    user_id: str
+    email: str
+    proposed_selection: dict[str, dict[str, str]]
+    current_selection: dict[str, dict[str, str]]
+    score: float
+
+class JointSolution(BaseModel):
+    members: list[JointMemberResult]
+
+class JointOptimiseResponse(BaseModel):
+    solutions: list[JointSolution]
+
+class BatchSelectionUpdate(BaseModel):
+    user_id: str
+    selection: dict[str, dict[str, str]]
+
+class BatchTimetableUpdateRequest(BaseModel):
+    group_id: int
+    updates: list[BatchSelectionUpdate]
