@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import UserTimetable
+from app.models import UserTimetable, GroupMembership
 
 client = TestClient(app)
 
@@ -189,5 +189,110 @@ def test_save_timetable_rejects_wrong_type_for_selection():
             "/timetable", json={"selection": "not-a-dict", "locked": []}
         )
         assert response.status_code == 422
+    finally:
+        clear_overrides()
+
+
+# PUT /timetable/batch
+
+
+CALLER_ID = "caller-id"
+TARGET_ID = "target-id"
+GROUP_ID = 1
+BATCH_SELECTION = {"CS2040S": {"Lecture": "02"}}
+
+
+def make_batch_db(caller_in_group=True, target_in_group=True, existing_row=None):
+    """Return a mock db where membership and timetable lookups return controlled values."""
+    db = MagicMock()
+    member_keys = set()
+    if caller_in_group:
+        member_keys.add((GROUP_ID, CALLER_ID))
+    if target_in_group:
+        member_keys.add((GROUP_ID, TARGET_ID))
+
+    def get_side_effect(model, key):
+        if model is GroupMembership:
+            return MagicMock() if key in member_keys else None
+        if model is UserTimetable:
+            return existing_row
+        return None
+
+    db.get.side_effect = get_side_effect
+    return db
+
+
+def test_batch_save_requires_auth():
+    response = client.put("/timetable/batch", json={"group_id": GROUP_ID, "updates": []})
+    assert response.status_code == 401
+
+
+def test_batch_save_returns_403_when_caller_not_in_group():
+    setup_overrides(user=make_user(sub=CALLER_ID), db=make_batch_db(caller_in_group=False))
+    try:
+        response = client.put(
+            "/timetable/batch",
+            json={"group_id": GROUP_ID, "updates": [{"user_id": TARGET_ID, "selection": BATCH_SELECTION}]},
+        )
+        assert response.status_code == 403
+    finally:
+        clear_overrides()
+
+
+def test_batch_save_returns_403_when_target_user_not_in_group():
+    setup_overrides(user=make_user(sub=CALLER_ID), db=make_batch_db(target_in_group=False))
+    try:
+        response = client.put(
+            "/timetable/batch",
+            json={"group_id": GROUP_ID, "updates": [{"user_id": TARGET_ID, "selection": BATCH_SELECTION}]},
+        )
+        assert response.status_code == 403
+    finally:
+        clear_overrides()
+
+
+def test_batch_save_returns_204_on_success():
+    row = MagicMock(spec=UserTimetable)
+    setup_overrides(user=make_user(sub=CALLER_ID), db=make_batch_db(existing_row=row))
+    try:
+        response = client.put(
+            "/timetable/batch",
+            json={"group_id": GROUP_ID, "updates": [{"user_id": TARGET_ID, "selection": BATCH_SELECTION}]},
+        )
+        assert response.status_code == 204
+    finally:
+        clear_overrides()
+
+
+def test_batch_save_updates_selection_on_existing_row():
+    row = MagicMock(spec=UserTimetable)
+    row.selection = {}
+    db = make_batch_db(existing_row=row)
+    setup_overrides(user=make_user(sub=CALLER_ID), db=db)
+    try:
+        client.put(
+            "/timetable/batch",
+            json={"group_id": GROUP_ID, "updates": [{"user_id": TARGET_ID, "selection": BATCH_SELECTION}]},
+        )
+        assert row.selection == BATCH_SELECTION
+        db.commit.assert_called_once()
+        db.add.assert_not_called()
+    finally:
+        clear_overrides()
+
+
+def test_batch_save_creates_new_row_when_no_timetable_exists():
+    db = make_batch_db(existing_row=None)
+    setup_overrides(user=make_user(sub=CALLER_ID), db=db)
+    try:
+        client.put(
+            "/timetable/batch",
+            json={"group_id": GROUP_ID, "updates": [{"user_id": TARGET_ID, "selection": BATCH_SELECTION}]},
+        )
+        db.add.assert_called_once()
+        added = db.add.call_args[0][0]
+        assert added.user_id == TARGET_ID
+        assert added.selection == BATCH_SELECTION
+        assert added.locked == []
     finally:
         clear_overrides()
