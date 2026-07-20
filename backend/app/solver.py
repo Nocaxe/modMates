@@ -716,7 +716,7 @@ def solve_joint(user_inputs: list[dict], n: int = 5) -> list[list[dict]]:
             for k2, cno in r["sel_keyed"].items():
                 cno2slots = r["cno2slots"]
                 idx2cno = r["idx2cno"]
-                if cno not in cno2slots:
+                if k2 not in cno2slots:
                     continue
                 var = z3.Int(f"{uid}__{k2[0]}__{k2[1].replace(' ', '_')}")
                 selected_sig = _timeslot_sig(cno2slots[k2][cno])
