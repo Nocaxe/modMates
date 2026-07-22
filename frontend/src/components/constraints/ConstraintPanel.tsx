@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import type { ConstraintType } from "../../types/constraints";
+import type { Constraint, ConstraintType } from "../../types/constraints";
 import { useConstraints } from "../../hooks/useConstraints";
 import { ConstraintRow } from "./ConstraintRow";
 
@@ -41,18 +41,23 @@ const ADDABLE: { type: ConstraintType; label: string; description: string }[] =
       label: "Max consecutive",
       description: "Limit back-to-back lesson hours",
     },
+    {
+      type: "group_overlap",
+      label: "Group overlap",
+      description: "Maximise shared classes with group members",
+    },
   ];
 
 interface Props {
-  // Expose constraints upward so the parent can include them in the optimize call
-  onChange?: (
-    payload: ReturnType<ReturnType<typeof useConstraints>["toPayload"]>,
-  ) => void;
+  constraints: Constraint[];
+  onConstraintsChange: React.Dispatch<React.SetStateAction<Constraint[]>>;
 }
 
-export function ConstraintPanel({ onChange }: Props) {
-  const { constraints, add, remove, update, toggleKind, toPayload } =
-    useConstraints();
+export function ConstraintPanel({ constraints, onConstraintsChange }: Props) {
+  const { add, remove, update, toggleKind } = useConstraints(
+    constraints,
+    onConstraintsChange,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -66,11 +71,6 @@ export function ConstraintPanel({ onChange }: Props) {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
-  // Notify parent whenever constraints change
-  useEffect(() => {
-    onChange?.(toPayload());
-  }, [constraints, onChange, toPayload]);
 
   const activeTypes = new Set(constraints.map((c) => c.type));
 

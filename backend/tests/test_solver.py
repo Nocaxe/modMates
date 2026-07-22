@@ -1,6 +1,6 @@
 """Unit tests for the Z3-based timetable solver."""
 from types import SimpleNamespace
-from app.solver import solve, _parse, _slots_clash, _option_passes_hard
+from app.solver import solve, solve_joint, _parse, _slots_clash, _option_passes_hard
 
 
 # helpers
@@ -213,3 +213,76 @@ def test_solve_soft_specific_free_days_prefers_day_off():
     c = {"type": "specific_free_days", "days": ["Tuesday"], "kind": "soft", "weight": 5}
     result = solve([mod_a, mod_b], {}, set(), [c])
     assert result["selection"]["CS2040S"]["Lecture"] == "02"
+
+
+# solve_joint
+
+
+def user_input(user_id, mods, constraints=None, locked=None, skipped=None, selection=None):
+    return {
+        "user_id": user_id,
+        "modules": mods,
+        "selection": selection or {},
+        "locked": locked or set(),
+        "skipped": skipped or frozenset(),
+        "constraints": constraints or [],
+    }
+
+
+def test_solve_joint_shared_module_assigns_same_classno_to_all_users():
+    mod = module("CS2040S", {
+        "Lecture": [
+            slot("01", "Monday", 540, 660),
+            slot("02", "Tuesday", 540, 660),
+        ],
+    })
+    results = solve_joint([user_input("alice", [mod]), user_input("bob", [mod])])
+    assert len(results) >= 1
+    sol = results[0]
+    alice = next(r for r in sol if r["user_id"] == "alice")
+    bob = next(r for r in sol if r["user_id"] == "bob")
+    assert alice["selection"]["CS2040S"]["Lecture"] == bob["selection"]["CS2040S"]["Lecture"]
+
+
+def test_solve_joint_independent_modules_both_receive_valid_selections():
+    mod_a = module("CS1010", {"Lecture": [slot("01", "Monday", 540, 660)]})
+    mod_b = module("CS2040S", {"Lecture": [slot("01", "Tuesday", 540, 660)]})
+    results = solve_joint([user_input("alice", [mod_a]), user_input("bob", [mod_b])])
+    assert len(results) >= 1
+    sol = results[0]
+    alice = next(r for r in sol if r["user_id"] == "alice")
+    bob = next(r for r in sol if r["user_id"] == "bob")
+    assert "CS1010" in alice["selection"]
+    assert "CS2040S" in bob["selection"]
+
+
+def test_solve_joint_returns_empty_list_when_hard_constraint_makes_shared_slot_infeasible():
+    # Only one Lecture option; alice's hard constraint blocks it → UNSAT
+    mod = module("CS2040S", {"Lecture": [slot("01", "Monday", 480, 540)]})  # 8–9am
+    constraints = [{"type": "earliest_start", "time": "0900", "kind": "hard"}]
+    results = solve_joint([user_input("alice", [mod], constraints=constraints), user_input("bob", [mod])])
+    assert results == []
+
+
+def test_solve_joint_result_entries_have_required_keys():
+    mod = module("CS1010", {"Lecture": [slot("01", "Monday", 540, 660)]})
+    results = solve_joint([user_input("alice", [mod]), user_input("bob", [mod])])
+    assert len(results) >= 1
+    for member in results[0]:
+        assert "user_id" in member
+        assert "selection" in member
+        assert "score" in member
+
+
+def test_solve_joint_returns_distinct_solutions_up_to_n():
+    mod = module("CS2040S", {
+        "Lecture": [
+            slot("01", "Monday", 540, 660),
+            slot("02", "Tuesday", 540, 660),
+            slot("03", "Wednesday", 540, 660),
+        ],
+    })
+    results = solve_joint([user_input("alice", [mod]), user_input("bob", [mod])], n=3)
+    assert len(results) == 3
+    chosen = [r[0]["selection"]["CS2040S"]["Lecture"] for r in results]
+    assert len(set(chosen)) == 3  # all three are distinct

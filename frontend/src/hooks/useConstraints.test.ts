@@ -1,18 +1,25 @@
 import { renderHook, act } from "@testing-library/react";
+import { useState } from "react";
 import { it, expect } from "vitest";
 import { useConstraints } from "./useConstraints";
 import type {
+  Constraint,
   EarliestStartConstraint,
   FreeDaysCountConstraint,
 } from "../types/constraints";
 
+function useConstraintsWithState() {
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
+  return useConstraints(constraints, setConstraints);
+}
+
 it("starts with an empty constraint list", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   expect(result.current.constraints).toHaveLength(0);
 });
 
 it("add() appends a soft constraint with default values", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("earliest_start");
   });
@@ -24,7 +31,7 @@ it("add() appends a soft constraint with default values", () => {
 });
 
 it("add() accepts an explicit hard kind", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("latest_end", "hard");
   });
@@ -32,7 +39,7 @@ it("add() accepts an explicit hard kind", () => {
 });
 
 it("add() assigns a unique id to each constraint", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("earliest_start");
     result.current.add("latest_end");
@@ -42,7 +49,7 @@ it("add() assigns a unique id to each constraint", () => {
 });
 
 it("remove() deletes only the targeted constraint", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("free_days_count");
     result.current.add("max_consecutive");
@@ -56,7 +63,7 @@ it("remove() deletes only the targeted constraint", () => {
 });
 
 it("update() patches the matching constraint and leaves others untouched", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("free_days_count");
     result.current.add("max_consecutive");
@@ -72,7 +79,7 @@ it("update() patches the matching constraint and leaves others untouched", () =>
 });
 
 it("toggleKind() flips soft → hard then hard → soft", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("max_consecutive");
   });
@@ -88,7 +95,7 @@ it("toggleKind() flips soft → hard then hard → soft", () => {
 });
 
 it("toPayload() strips the id field from every constraint", () => {
-  const { result } = renderHook(() => useConstraints());
+  const { result } = renderHook(() => useConstraintsWithState());
   act(() => {
     result.current.add("max_consecutive");
   });

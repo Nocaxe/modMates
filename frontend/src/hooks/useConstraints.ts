@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type {
   Constraint,
   ConstraintKind,
@@ -31,36 +32,49 @@ const DEFAULTS: Record<
     duration: 60,
   },
   max_consecutive: { type: "max_consecutive", hours: 3 },
+  group_overlap: { type: "group_overlap" },
 };
 
-export function useConstraints() {
-  const [constraints, setConstraints] = useState<Constraint[]>([]);
-
+export function useConstraints(
+  constraints: Constraint[],
+  setConstraints: Dispatch<SetStateAction<Constraint[]>>,
+) {
   const add = useCallback(
     (type: ConstraintType, kind: ConstraintKind = "soft") => {
       const c = { ...DEFAULTS[type], id: uid(), kind, weight: 3 };
       setConstraints((prev) => [...prev, c]);
     },
-    [],
+    [setConstraints],
   );
 
-  const remove = useCallback((id: string) => {
-    setConstraints((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+  const remove = useCallback(
+    (id: string) => {
+      setConstraints((prev) => prev.filter((c) => c.id !== id));
+    },
+    [setConstraints],
+  );
 
-  const update = useCallback((id: string, patch: Partial<Constraint>) => {
-    setConstraints((prev) =>
-      prev.map((c) => (c.id === id ? ({ ...c, ...patch } as Constraint) : c)),
-    );
-  }, []);
+  const update = useCallback(
+    (id: string, patch: Partial<Constraint>) => {
+      setConstraints((prev) =>
+        prev.map((c) =>
+          c.id === id ? ({ ...c, ...patch } as Constraint) : c,
+        ),
+      );
+    },
+    [setConstraints],
+  );
 
-  const toggleKind = useCallback((id: string) => {
-    setConstraints((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, kind: c.kind === "hard" ? "soft" : "hard" } : c,
-      ),
-    );
-  }, []);
+  const toggleKind = useCallback(
+    (id: string) => {
+      setConstraints((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, kind: c.kind === "hard" ? "soft" : "hard" } : c,
+        ),
+      );
+    },
+    [setConstraints],
+  );
 
   // Remove uid for the backend
   const toPayload = useCallback(

@@ -101,7 +101,7 @@ function slotKey(code: string, lessonType: string) {
   return `${code}|${lessonType}`;
 }
 
-function LockIcon({ locked }: { locked: boolean }) {
+export function LockIcon({ locked }: { locked: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0">
       {locked ? (
@@ -123,16 +123,16 @@ interface TimetableUIProps {
   modules?: Module[];
   selection: SelectionState;
   locked: Set<string>;
+  skipped?: Set<string>;
   onSelectionChange: (s: SelectionState) => void;
-  onLockedChange: (l: Set<string>) => void;
 }
 
 export default function TimetableUI({
   modules = [],
   selection,
   locked,
+  skipped,
   onSelectionChange,
-  onLockedChange,
 }: TimetableUIProps) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
@@ -144,22 +144,6 @@ export default function TimetableUI({
     e.stopPropagation();
     const key = slotKey(code, lessonType);
     setActiveKey((prev) => (prev === key ? null : key));
-  }
-
-  function handleLockClick(
-    code: string,
-    lessonType: string,
-    e: React.MouseEvent,
-  ) {
-    e.stopPropagation();
-    const key = slotKey(code, lessonType);
-    const next = new Set(locked);
-    if (next.has(key)) {
-      next.delete(key);
-    } else {
-      next.add(key);
-    }
-    onLockedChange(next);
   }
 
   function handleAlternativeClick(
@@ -292,6 +276,7 @@ export default function TimetableUI({
                   const isAlt = block.type === "alternative";
                   const isActive = isSelected && block.isActive;
                   const isLocked = isSelected && block.isLocked;
+                  const isSkipped = isSelected && (skipped?.has(block.key) ?? false);
 
                   return (
                     <div
@@ -308,11 +293,14 @@ export default function TimetableUI({
                           ? `1.5px dashed ${colour.border}88`
                           : isActive
                             ? `1.5px solid ${colour.border}`
-                            : `0.5px solid ${colour.border}55`,
+                            : isSkipped
+                              ? `1.5px dashed ${colour.border}66`
+                              : `0.5px solid ${colour.border}55`,
                         outline: isActive
                           ? `5px solid ${colour.accent}`
                           : "none",
                         outlineOffset: "1px",
+                        opacity: isSkipped ? 0.4 : 1,
                       }}
                       onClick={(e) =>
                         isAlt
@@ -332,20 +320,10 @@ export default function TimetableUI({
                         >
                           {mod.code}
                         </span>
-                        {isSelected && (
-                          <button
-                            className="flex items-center shrink-0 p-1 rounded bg-transparent border border-gray-300 cursor-pointer transition-opacity"
-                            style={{
-                              color: colour.accent,
-                              opacity: isLocked ? 1 : 0.6,
-                            }}
-                            onClick={(e) =>
-                              handleLockClick(mod.code, lessonType, e)
-                            }
-                            aria-label={isLocked ? "Unlock slot" : "Lock slot"}
-                          >
-                            <LockIcon locked={isLocked} />
-                          </button>
+                        {isLocked && (
+                          <span style={{ color: colour.accent }} className="shrink-0">
+                            <LockIcon locked={true} />
+                          </span>
                         )}
                       </div>
                       <span

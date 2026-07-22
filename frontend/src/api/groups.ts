@@ -97,3 +97,56 @@ export async function getOptimiserMembers(accessToken: string, groupId: number):
     }
     return response.json() as Promise<OptimiserGroupMember[]>;
 }
+
+export type JointMemberResult = {
+    user_id: string;
+    email: string;
+    proposed_selection: Record<string, Record<string, string>>;
+    current_selection: Record<string, Record<string, string>>;
+    score: number;
+};
+
+export type JointSolution = {
+    members: JointMemberResult[];
+};
+
+export type JointOptimiseResponse = {
+    solutions: JointSolution[];
+};
+
+export async function jointOptimise(
+    accessToken: string,
+    groupId: number,
+): Promise<JointOptimiseResponse> {
+    const response = await fetch(`${API_BASE}/optimise/joint`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ group_id: groupId }),
+    });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({})) as { detail?: string };
+        throw new Error(err.detail ?? 'Joint optimisation failed');
+    }
+    return response.json() as Promise<JointOptimiseResponse>;
+}
+
+export async function batchSaveTimetables(
+    accessToken: string,
+    groupId: number,
+    updates: { user_id: string; selection: Record<string, Record<string, string>> }[],
+): Promise<void> {
+    const response = await fetch(`${API_BASE}/timetable/batch`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ group_id: groupId, updates }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to apply joint timetable');
+    }
+}

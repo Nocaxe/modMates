@@ -4,7 +4,7 @@ from app.main import app
 
 client = TestClient(app)
 
-# fixtures 
+# fixtures
 
 def make_slot(classNo, day, start, end):
     return {"classNo": classNo, "day": day, "start": start, "end": end, "venue": "LT1"}
@@ -27,30 +27,33 @@ MOD_B = make_module("CS2040S", {
 })
 
 
-# basic response shape 
+# basic response shape
 
-def test_optimise_returns_200_with_selection_and_score():
+def test_optimise_returns_200_with_solutions():
     body = {"modules": [MOD_A], "selection": {}, "locked": [], "constraints": []}
     response = client.post("/optimise", json=body)
     assert response.status_code == 200
     data = response.json()
-    assert "selection" in data
-    assert "score" in data
+    assert "solutions" in data
+    assert len(data["solutions"]) >= 1
+    assert "selection" in data["solutions"][0]
+    assert "score" in data["solutions"][0]
 
 def test_optimise_selection_contains_all_lesson_types():
     body = {"modules": [MOD_B], "selection": {}, "locked": [], "constraints": []}
     response = client.post("/optimise", json=body)
     data = response.json()
-    assert "Lecture" in data["selection"]["CS2040S"]
-    assert "Tutorial" in data["selection"]["CS2040S"]
+    first = data["solutions"][0]
+    assert "Lecture" in first["selection"]["CS2040S"]
+    assert "Tutorial" in first["selection"]["CS2040S"]
 
 def test_optimise_score_is_1_with_no_soft_constraints():
     body = {"modules": [MOD_A], "selection": {}, "locked": [], "constraints": []}
     response = client.post("/optimise", json=body)
-    assert response.json()["score"] == 1.0
+    assert response.json()["solutions"][0]["score"] == 1.0
 
 
-# clash handling 
+# clash handling
 
 def test_optimise_returns_negative_score_when_no_valid_assignment():
     # Two lesson types with only one option each, and they clash
@@ -61,8 +64,9 @@ def test_optimise_returns_negative_score_when_no_valid_assignment():
     body = {"modules": [mod], "selection": {}, "locked": [], "constraints": []}
     response = client.post("/optimise", json=body)
     data = response.json()
-    assert data["score"] == -1.0
-    assert data["selection"] == {}
+    first = data["solutions"][0]
+    assert first["score"] == -1.0
+    assert first["selection"] == {}
 
 def test_optimise_picks_non_clashing_options():
     mod = make_module("CS2040S", {
@@ -75,11 +79,12 @@ def test_optimise_picks_non_clashing_options():
     body = {"modules": [mod], "selection": {}, "locked": [], "constraints": []}
     response = client.post("/optimise", json=body)
     data = response.json()
-    assert data["score"] >= 0
-    assert data["selection"]["CS2040S"]["Tutorial"] == "11"
+    first = data["solutions"][0]
+    assert first["score"] >= 0
+    assert first["selection"]["CS2040S"]["Tutorial"] == "11"
 
 
-# locked slots 
+# locked slots
 
 def test_optimise_respects_locked_lesson_type():
     mod = make_module("CS2040S", {
@@ -95,10 +100,10 @@ def test_optimise_respects_locked_lesson_type():
         "constraints": [],
     }
     response = client.post("/optimise", json=body)
-    assert response.json()["selection"]["CS2040S"]["Lecture"] == "02"
+    assert response.json()["solutions"][0]["selection"]["CS2040S"]["Lecture"] == "02"
 
 
-# hard constraints 
+# hard constraints
 
 def test_optimise_hard_earliest_start_excludes_early_options():
     mod = make_module("CS2040S", {
@@ -114,10 +119,63 @@ def test_optimise_hard_earliest_start_excludes_early_options():
         "constraints": [{"type": "earliest_start", "time": "0900", "kind": "hard"}],
     }
     response = client.post("/optimise", json=body)
-    assert response.json()["selection"]["CS2040S"]["Lecture"] == "02"
+    assert response.json()["solutions"][0]["selection"]["CS2040S"]["Lecture"] == "02"
+
+# top-n enumeration
+
+def test_optimise_returns_multiple_solutions_when_options_exist():
+    mod = make_module("CS2040S", {
+        "Lecture": [
+            make_slot("01", "Monday", 540, 660),
+            make_slot("02", "Tuesday", 540, 660),
+            make_slot("03", "Wednesday", 540, 660),
+        ],
+    })
+    body = {"modules": [mod], "selection": {}, "locked": [], "constraints": []}
+    response = client.post("/optimise", json=body)
+    data = response.json()
+    assert len(data["solutions"]) > 1
+
+def test_optimise_solutions_are_distinct():
+    mod = make_module("CS2040S", {
+        "Lecture": [
+            make_slot("01", "Monday", 540, 660),
+            make_slot("02", "Tuesday", 540, 660),
+        ],
+    })
+    body = {"modules": [mod], "selection": {}, "locked": [], "constraints": []}
+    response = client.post("/optimise", json=body)
+    solutions = response.json()["solutions"]
+    selections = [str(s["selection"]) for s in solutions]
+    assert len(selections) == len(set(selections))  # all distinct
 
 
-# validation 
+# group overlap
+
+def test_optimise_accepts_group_members():
+    body = {
+        "modules": [MOD_B],
+        "selection": {},
+        "locked": [],
+        "constraints": [{"type": "group_overlap", "kind": "soft", "weight": 3}],
+        "group_members": [
+            {
+                "name": "Alice",
+                "ranked_selections": [{"CS2040S": {"Lecture": "01", "Tutorial": "10"}}],
+            }
+        ],
+    }
+    response = client.post("/optimise", json=body)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["solutions"]) >= 1
+    # Should prefer Alice's selections (only one option each here, so must match)
+    first = data["solutions"][0]
+    assert first["selection"]["CS2040S"]["Lecture"] == "01"
+    assert first["selection"]["CS2040S"]["Tutorial"] == "10"
+
+
+# validation
 
 def test_optimise_rejects_missing_modules_field():
     body = {"selection": {}, "locked": [], "constraints": []}
