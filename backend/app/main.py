@@ -35,7 +35,7 @@ app.include_router(timetable.router)
 app.include_router(optimiser.router)
 app.include_router(groups.router)
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     '''Health check endpoint to verify the API is running.'''
     return {"status": "ok"}
