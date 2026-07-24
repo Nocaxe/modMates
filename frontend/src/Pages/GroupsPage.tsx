@@ -1,5 +1,6 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   listMyGroups,
   createGroup,
@@ -10,6 +11,7 @@ import type { Group } from "../api/groups";
 
 export default function GroupsPage() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [name, setName] = useState<string>("");
   const [inviteCode, setInviteCode] = useState<string>("");
@@ -83,6 +85,12 @@ export default function GroupsPage() {
           <br />
           <span>Members: {group.member_count}</span>
           <br />
+          <button 
+            onClick={() => void navigate(`/groups/${group.id}`)}
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-2"
+          >
+            View Group
+          </button>
           <button
             onClick={() => void onLeave(group.id)}
             className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 mt-2"
