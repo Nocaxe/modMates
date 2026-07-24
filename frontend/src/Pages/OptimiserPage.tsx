@@ -5,7 +5,7 @@ import { BottomPanel } from "../components/BottomPanel";
 import { SolutionPicker } from "../components/SolutionPicker";
 import { GroupOverlapPanel } from "../components/GroupOverlapPanel";
 import { JointOptimisePanel } from "../components/JointOptimisePanel";
-import { getModuleDetail, moduleDetailToModule } from "../api/modules";
+import { restoreModules } from "../utils/moduleRestore";
 import {
   getTimetable,
   saveTimetable,
@@ -70,12 +70,7 @@ function seedDefaults(
   return changed ? next : selection;
 }
 
-function restoreModules(codes: string[], onRestored: (mods: Module[]) => void) {
-  if (codes.length === 0) return;
-  Promise.all(codes.map((code) => getModuleDetail(code)))
-    .then((details) => onRestored(details.map(moduleDetailToModule)))
-    .catch(() => {});
-}
+
 
 export default function OptimiserPage() {
   const { session } = useAuth();
