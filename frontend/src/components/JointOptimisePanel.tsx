@@ -1,4 +1,5 @@
 import type { JointMemberResult } from "../api/groups";
+import { getChangedKeys } from "../utils/getChangedKeys";
 
 interface Props {
     selectedSolution: JointMemberResult[];
@@ -7,20 +8,6 @@ interface Props {
     onDismiss: () => void;
 }
 
-function getChangedKeys(
-    proposed: Record<string, Record<string, string>>,
-    current: Record<string, Record<string, string>>,
-): Set<string> {
-    const changed = new Set<string>();
-    for (const [code, ltMap] of Object.entries(proposed)) {
-        for (const [lt, cno] of Object.entries(ltMap)) {
-            if (current[code]?.[lt] !== cno) {
-                changed.add(`${code}|${lt}`);
-            }
-        }
-    }
-    return changed;
-}
 
 export function JointOptimisePanel({ selectedSolution, groupName, onApply, onDismiss }: Props) {
     const totalChanges = selectedSolution.reduce((sum, member) => {
