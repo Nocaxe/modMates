@@ -6,7 +6,6 @@ import { SpecificFreeDaysConfig } from "./configs/SpecificFreeDaysConfig";
 import { BlockedSlotConfig } from "./configs/BlockedSlotConfig";
 import { LunchBreakConfig } from "./configs/LunchBreakConfig";
 import { MaxConsecutiveConfig } from "./configs/MaxConsecutiveConfig";
-import { GroupOverlapConfig } from "./configs/GroupOverlapConfig";
 import { WeightSlider } from "./WeightSlider";
 
 // Labels for each type
@@ -18,7 +17,6 @@ const META: Record<Constraint["type"], { label: string }> = {
   blocked_slot: { label: "Blocked slot" },
   lunch_break: { label: "Lunch break" },
   max_consecutive: { label: "Max consecutive" },
-  group_overlap: { label: "Group overlap" },
 };
 
 interface Props {
@@ -44,30 +42,27 @@ export function ConstraintRow({
           <span className="text-sm font-medium text-gray-800">{label}</span>
         </div>
         <div className="flex items-center gap-2">
-          {/* Hard / Soft toggle pill — hidden for group_overlap (always soft) */}
-          {constraint.type !== "group_overlap" && (
-            <button
-              type="button"
-              onClick={onToggleKind}
-              title={
+          <button
+            type="button"
+            onClick={onToggleKind}
+            title={
+              constraint.kind === "hard"
+                ? "Hard: optimizer must satisfy this"
+                : "Soft: optimizer tries but may skip this"
+            }
+            className={`
+              px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors cursor-pointer
+              ${
                 constraint.kind === "hard"
-                  ? "Hard: optimizer must satisfy this"
-                  : "Soft: optimizer tries but may skip this"
+                  ? "bg-red-100 text-red-700 hover:bg-red-200"
+                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"
               }
-              className={`
-                px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors cursor-pointer
-                ${
-                  constraint.kind === "hard"
-                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                }
-              `}
-            >
-              {constraint.kind === "hard"
-                ? "Constraint type: Hard"
-                : "Constraint type: Soft"}
-            </button>
-          )}
+            `}
+          >
+            {constraint.kind === "hard"
+              ? "Constraint type: Hard"
+              : "Constraint type: Soft"}
+          </button>
           {/* Remove */}
           <button
             type="button"
@@ -102,9 +97,6 @@ export function ConstraintRow({
         )}
         {constraint.type === "max_consecutive" && (
           <MaxConsecutiveConfig c={constraint} onChange={onUpdate} />
-        )}
-        {constraint.type === "group_overlap" && (
-          <GroupOverlapConfig c={constraint} />
         )}
       </div>
 
