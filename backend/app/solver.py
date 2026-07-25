@@ -533,16 +533,9 @@ def _solve_joint_once(user_inputs: list[dict], extra_blocking: list) -> list[dic
         # Skip equality if any user has this lesson type skipped
         if any(skip_key in per_user_skipped[uid] for uid in uids):
             continue
-        anchor_idx = all_index_to_classno[(uids[0], code, lt)]
         anchor_var = all_z3_vars[(uids[0], code, lt)]
         for other_uid in uids[1:]:
-            other_idx = all_index_to_classno[(other_uid, code, lt)]
-            # Both come from the same NUSMods data so lists should match
-            if anchor_idx != other_idx:
-                raise ValueError(
-                    f"ClassNo mismatch for {code}|{lt} between {uids[0]} and {other_uid}"
-                )
-            opt.add(anchor_var == all_z3_vars[(other_uid, code, lt)])
+            opt.add_soft(anchor_var == all_z3_vars[(other_uid, code, lt)], weight=_WEIGHT_MAP[-1])
 
     # Phase 3: soft constraints per user (group_overlap excluded by caller)
     for inp in user_inputs:
