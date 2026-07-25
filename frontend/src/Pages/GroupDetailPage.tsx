@@ -30,6 +30,7 @@ export default function GroupDetailPage() {
     const [ownLocked, setOwnLocked] = useState<string[]>([]);
     const [ownSkipped, setOwnSkipped] = useState<string[]>([]);
     const [ownModules, setOwnModules] = useState<Module[]>([]);
+    const [ownModuleCodes, setOwnModuleCodes] = useState<string[]>([]);
     const [ownConstraints, setOwnConstraints] = useState<Constraint[]>([]);
 
     const [activeTab, setActiveTab] = useState<string>("You")
@@ -50,6 +51,7 @@ export default function GroupDetailPage() {
             setOwnLocked(data.locked);
             setOwnSkipped(data.skipped);
             setOwnConstraints(data.constraints ?? []);
+            setOwnModuleCodes(data.modules);
             restoreModules(data.modules, setOwnModules);
         })
         .catch( ()=> {});
@@ -73,7 +75,7 @@ export default function GroupDetailPage() {
         groupId: numericGroupId,
         ownLocked,
         ownSkipped,
-        ownModules,
+        ownModuleCodes,
         ownConstraints,
         onExported: setOwnSelection,
     });

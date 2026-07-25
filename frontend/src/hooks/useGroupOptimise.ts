@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { jointOptimise, type JointSolution, type JointMemberResult } from "../api/groups";
 import { saveTimetable } from "../api/timetable";
-import type { Module, SelectionState } from "../components/Timetable";
+import type { SelectionState } from "../components/Timetable";
 import type { Constraint } from "../types/constraints";
 import type { RankedSolution } from "../api/optimise"
 
@@ -11,7 +11,7 @@ interface UseGroupOptimiseArgs {
     groupId: number | null;
     ownLocked: string[];
     ownSkipped: string[];
-    ownModules: Module[];
+    ownModuleCodes: string[];
     ownConstraints: Constraint[];
     onExported: (selection: SelectionState) => void;
 }
@@ -22,7 +22,7 @@ export function useGroupOptimise({
     groupId,
     ownLocked,
     ownSkipped,
-    ownModules,
+    ownModuleCodes,
     ownConstraints,
     onExported,
 }: UseGroupOptimiseArgs) {
@@ -73,7 +73,7 @@ export function useGroupOptimise({
                 selection: myResult.proposed_selection,
                 locked: ownLocked,
                 skipped: ownSkipped,
-                modules: ownModules.map((mod) => mod.code),
+                modules: ownModuleCodes,
                 constraints: ownConstraints,
             });
             onExported(myResult.proposed_selection);
