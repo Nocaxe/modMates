@@ -15,6 +15,7 @@ import type { Constraint } from "../types/constraints";
 import { useGroupOptimise } from "../hooks/useGroupOptimise";
 import { GroupOptimisePreviewPanel } from "../components/GroupOptimisePreviewPanel";
 import { SolutionPicker } from "../components/SolutionPicker";
+import { GroupOverlapPanel } from "../components/GroupOverlapPanel";
 
 
 
@@ -155,6 +156,15 @@ export default function GroupDetailPage() {
           member={optimiser.myResult}
           onExport={() => void optimiser.exportSelection()}
           onDismiss={optimiser.discard}
+        />
+      )}
+      
+      {optimiserMembers.length > 0 && (
+        <GroupOverlapPanel
+          modules={ownModules}
+          userSelection={ownSelection}
+          groupMembers={optimiserMembers}
+          rankIndex={0}
         />
       )}
 
