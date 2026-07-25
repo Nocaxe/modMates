@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
-from app.main import app
+
 from app.auth import get_current_user
+from app.main import app
 
 client = TestClient(app)
 

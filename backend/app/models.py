@@ -2,8 +2,17 @@
 
 import secrets
 
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, UniqueConstraint, text
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
+
 from .database import Base
 
 

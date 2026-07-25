@@ -1,10 +1,11 @@
 '''API endpoints for managing user timetables.'''
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
+
 from app.auth import get_current_user
-from app.models import UserTimetable, GroupMembership
-from app.schemas import TimetableBody, BatchTimetableUpdateRequest
+from app.database import get_db
+from app.models import GroupMembership, UserTimetable
+from app.schemas import BatchTimetableUpdateRequest, TimetableBody
 
 router = APIRouter()
 

@@ -501,7 +501,7 @@ def _solve_joint_once(user_inputs: list[dict], extra_blocking: list) -> list[dic
                 day_free_flags = []
                 for day in DAYS:
                     on_day = [
-                        user_z3_vars[k2] == i
+                        var == i
                         for k2, var in user_z3_vars.items()
                         if f"{k2[0]}|{k2[1]}" not in skipped
                         for i, cno in enumerate(user_idx2cno[k2])

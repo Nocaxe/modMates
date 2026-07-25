@@ -1,14 +1,21 @@
+from typing import Any
+
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Any
-import httpx
 from sqlalchemy.orm import Session
-from app.solver import solve_top_n, solve_joint
-from app.database import get_db
+
 from app.auth import get_current_user
-from app.models import GroupMembership, UserTimetable, Profile
-from app.schemas import JointOptimiseRequest, JointOptimiseResponse, JointMemberResult, JointSolution
-from app.routers.modules import NUSMODS_BASE, ACAD_YEAR
+from app.database import get_db
+from app.models import GroupMembership, Profile, UserTimetable
+from app.routers.modules import ACAD_YEAR, NUSMODS_BASE
+from app.schemas import (
+    JointMemberResult,
+    JointOptimiseRequest,
+    JointOptimiseResponse,
+    JointSolution,
+)
+from app.solver import solve_joint, solve_top_n
 
 router = APIRouter()
 

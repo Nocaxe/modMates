@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query 
 import httpx
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/modules", tags=["modules"])
 
