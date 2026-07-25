@@ -13,8 +13,8 @@ export function GroupOptimisePreviewPanel({ member, onExport, onDismiss }: Props
     return (
         <div className="flex flex-col gap-4 p-4 bg-gray-900 border border-gray-700 rounded-xl">
             <div className="px-3 py-2 bg-amber-950 border border-amber-700 rounded-lg text-amber-200 text-xs">
-                This will update <span className="font-semibold">your</span> saved timetable only.
-                Your locked and skipped settings are preserved.
+                This will update <span className="font-semibold">all group members'</span> saved timetables.
+                Each member's locked and skipped settings are preserved.
             </div>
 
             <div className="flex flex-col gap-1.5 p-3 bg-gray-800 rounded-lg">
@@ -57,7 +57,7 @@ export function GroupOptimisePreviewPanel({ member, onExport, onDismiss }: Props
                     disabled={changed.size === 0}
                     className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
                 >
-                    Export to My Timetable
+                    Apply to Group
                 </button>
                 <button
                     type="button"

@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { jointOptimise, type JointSolution, type JointMemberResult } from "../api/groups";
-import { saveTimetable } from "../api/timetable";
+import { jointOptimise, batchSaveTimetables, type JointSolution, type JointMemberResult } from "../api/groups";
 import type { SelectionState } from "../components/Timetable";
-import type { Constraint } from "../types/constraints";
 import type { RankedSolution } from "../api/optimise"
 
 interface UseGroupOptimiseArgs {
     accessToken: string | undefined;
     userId: string | undefined;
     groupId: number | null;
-    ownLocked: string[];
-    ownSkipped: string[];
-    ownModuleCodes: string[];
-    ownConstraints: Constraint[];
     onExported: (selection: SelectionState) => void;
 }
 
@@ -20,10 +14,6 @@ export function useGroupOptimise({
     accessToken,
     userId,
     groupId,
-    ownLocked,
-    ownSkipped,
-    ownModuleCodes,
-    ownConstraints,
     onExported,
 }: UseGroupOptimiseArgs) {
     const [solutions, setSolutions] = useState<JointSolution[] | null>(null);
@@ -63,26 +53,25 @@ export function useGroupOptimise({
 
     async function exportSelection() {
         if (!accessToken || groupId === null || !userId || !solutions) return;
+        const currentSolution = solutions[selectedIndex];
         const myResult = myResultAt(selectedIndex);
-        if (!myResult) {
-            setError("No selection available for the current user.");
+        if (!currentSolution || !myResult) {
+            setError("No selection available.");
             return;
         }
         try {
-            await saveTimetable(accessToken, {
-                selection: myResult.proposed_selection,
-                locked: ownLocked,
-                skipped: ownSkipped,
-                modules: ownModuleCodes,
-                constraints: ownConstraints,
-            });
+            const updates = currentSolution.members.map((m) => ({
+                user_id: m.user_id,
+                selection: m.proposed_selection,
+            }));
+            await batchSaveTimetables(accessToken, groupId, updates);
             onExported(myResult.proposed_selection);
             setSolutions(null);
             setSelectedIndex(0);
-            setExportMessage("Exported to your home timetable.");
+            setExportMessage("Applied to all group members' timetables.");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to export selection.");
-        }   
+            setError(err instanceof Error ? err.message : "Failed to apply selection.");
+        }
     }
 
     function discard() {
@@ -96,10 +85,16 @@ export function useGroupOptimise({
         return { selection: mine?.proposed_selection ?? {}, score: mine?.score ?? 0 };
     });
 
+    function memberProposedSelection(email: string): Record<string, Record<string, string>> | null {
+        if (!solutions) return null;
+        return solutions[selectedIndex]?.members.find((m) => m.email === email)?.proposed_selection ?? null;
+    }
+
     return {
         mySolutions,
         selectedIndex,
         myResult: myResultAt(selectedIndex),
+        memberProposedSelection,
         error,
         exportMessage,
         runOptimise,

@@ -11,7 +11,6 @@ import {
     type GroupMemberInfo,
     type OptimiserGroupMember,
 } from "../api/groups";
-import type { Constraint } from "../types/constraints";
 import { useGroupOptimise } from "../hooks/useGroupOptimise";
 import { GroupOptimisePreviewPanel } from "../components/GroupOptimisePreviewPanel";
 import { SolutionPicker } from "../components/SolutionPicker";
@@ -31,8 +30,6 @@ export default function GroupDetailPage() {
     const [ownLocked, setOwnLocked] = useState<string[]>([]);
     const [ownSkipped, setOwnSkipped] = useState<string[]>([]);
     const [ownModules, setOwnModules] = useState<Module[]>([]);
-    const [ownModuleCodes, setOwnModuleCodes] = useState<string[]>([]);
-    const [ownConstraints, setOwnConstraints] = useState<Constraint[]>([]);
 
     const [activeTab, setActiveTab] = useState<string>("You")
     const [memberModulesCache, setMemberModulesCache] = useState<Record<string, Module[]>>({}); 
@@ -51,8 +48,6 @@ export default function GroupDetailPage() {
             setOwnSelection(data.selection);
             setOwnLocked(data.locked);
             setOwnSkipped(data.skipped);
-            setOwnConstraints(data.constraints ?? []);
-            setOwnModuleCodes(data.modules);
             restoreModules(data.modules, setOwnModules);
         })
         .catch( ()=> {});
@@ -74,10 +69,6 @@ export default function GroupDetailPage() {
         accessToken: session?.access_token,
         userId: session?.user.id,
         groupId: numericGroupId,
-        ownLocked,
-        ownSkipped,
-        ownModuleCodes,
-        ownConstraints,
         onExported: setOwnSelection,
     });
 
@@ -88,9 +79,11 @@ export default function GroupDetailPage() {
 
 
     const previewModules = activeTab === "You" ? ownModules : memberModulesCache[activeTab] ?? [];
-    const previewSelection = activeTab === "You" 
-        ? (optimiser.myResult?.proposed_selection ?? ownSelection) 
-        : optimiserMembers.find((m) => m.name === activeTab)?.ranked_selections[0] ?? {};
+    const previewSelection = activeTab === "You"
+        ? (optimiser.myResult?.proposed_selection ?? ownSelection)
+        : (optimiser.memberProposedSelection(activeTab)
+           ?? optimiserMembers.find((m) => m.name === activeTab)?.ranked_selections[0]
+           ?? {});
 
   return (
     <div className="flex flex-col gap-4 p-4">
