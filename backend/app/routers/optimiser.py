@@ -147,7 +147,7 @@ async def joint_optimise(
                         continue
                     resp.raise_for_status()
                     modules.append(_parse_nusmods_to_module_in(resp.json()))
-                except Exception:
+                except Exception:  # noqa: BLE001, S112
                     continue  # skip modules that fail to fetch
 
             if not modules:

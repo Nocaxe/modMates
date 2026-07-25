@@ -48,7 +48,7 @@ def db_health_check(db: Session = Depends(get_db)):
         # Ask the DB to return 1 and check if it succeeds
         db.execute(text("SELECT 1"))
         return {"status": "ok"}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return {"status": "error", "details": str(e)}
 
 # Test endpoint for authentication
