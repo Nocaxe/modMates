@@ -1,6 +1,8 @@
 '''Schemas for the API endpoints.'''
 from datetime import datetime
+
 from pydantic import BaseModel
+
 
 class TimetableBody(BaseModel):
     '''Request body schema for saving a user's timetable.'''

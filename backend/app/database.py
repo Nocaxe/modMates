@@ -3,8 +3,10 @@ SQLAlchemy engine and session
 '''
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
 from app.config import settings
+
 
 # Base for all models to inherit from
 class Base(DeclarativeBase):

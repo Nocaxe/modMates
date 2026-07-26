@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext"
 import LandingPage from './Pages/LandingPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
 import GroupsPage from './Pages/GroupsPage.tsx'
+import GroupDetailPage from './Pages/GroupDetailPage.tsx'
 import ProfilePage from './Pages/ProfilePage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
     children: [
       { path: 'optimiser', element: <OptimiserPage /> },
       { path: 'groups', element: <ProtectedRoute><GroupsPage /></ProtectedRoute> },
+      { path: 'groups/:groupId', element: <ProtectedRoute><GroupDetailPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> }
     ]
   }

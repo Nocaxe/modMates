@@ -3,17 +3,18 @@ FastAPI application entry point
 '''
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.database import get_db
+from sqlalchemy.orm import Session
+
 from app.config import settings
-from app.routers import modules
-from app.routers import timetable
-from app.routers import optimiser
-from app.routers import groups
+from app.database import get_db
+from app.routers import groups, modules, optimiser, timetable
+
 from .auth import get_current_user
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -47,7 +48,7 @@ def db_health_check(db: Session = Depends(get_db)):
         # Ask the DB to return 1 and check if it succeeds
         db.execute(text("SELECT 1"))
         return {"status": "ok"}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return {"status": "error", "details": str(e)}
 
 # Test endpoint for authentication

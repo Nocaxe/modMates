@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query 
 import httpx
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/modules", tags=["modules"])
 
@@ -17,7 +17,6 @@ async def warmup_cache():
 
 @router.get("/search")
 async def search_modules(query: str = Query(..., min_length=1)):
-    global _module_list_cache
     if _module_list_cache is None:
         await warmup_cache()
 

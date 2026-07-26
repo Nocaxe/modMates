@@ -47,10 +47,6 @@ export interface MaxConsecutiveConstraint extends BaseConstraint {
   hours: number;
 }
 
-export interface GroupOverlapConstraint extends BaseConstraint {
-  type: "group_overlap";
-}
-
 export type Constraint =
   | EarliestStartConstraint
   | LatestEndConstraint
@@ -59,7 +55,6 @@ export type Constraint =
   | BlockedSlotConstraint
   | LunchBreakConstraint
   | MaxConsecutiveConstraint
-  | GroupOverlapConstraint;
 
 export type ConstraintType = Constraint["type"];
 

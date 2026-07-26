@@ -1,10 +1,12 @@
 '''Tests for GET /timetable and PUT /timetable endpoints.'''
 from unittest.mock import MagicMock
+
 from fastapi.testclient import TestClient
-from app.main import app
+
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import UserTimetable, GroupMembership
+from app.main import app
+from app.models import GroupMembership, UserTimetable
 
 client = TestClient(app)
 

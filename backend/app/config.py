@@ -4,6 +4,7 @@ Configuration settings and env variables
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     '''Application configuration settings loaded from environment variables.'''
     database_url: str = ""

@@ -125,6 +125,7 @@ interface TimetableUIProps {
   locked: Set<string>;
   skipped?: Set<string>;
   onSelectionChange: (s: SelectionState) => void;
+  readOnly?: boolean;
 }
 
 export default function TimetableUI({
@@ -133,6 +134,7 @@ export default function TimetableUI({
   locked,
   skipped,
   onSelectionChange,
+  readOnly = false,
 }: TimetableUIProps) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
@@ -141,6 +143,7 @@ export default function TimetableUI({
     lessonType: string,
     e: React.MouseEvent,
   ) {
+    if (readOnly) return;
     e.stopPropagation();
     const key = slotKey(code, lessonType);
     setActiveKey((prev) => (prev === key ? null : key));
@@ -152,6 +155,7 @@ export default function TimetableUI({
     classNo: string,
     e: React.MouseEvent,
   ) {
+    if (readOnly) return;
     e.stopPropagation();
     onSelectionChange({ ...selection, [code]: { ...selection[code], [lessonType]: classNo } });
     setActiveKey(null);
@@ -281,7 +285,7 @@ export default function TimetableUI({
                   return (
                     <div
                       key={`${block.key}-${slot.classNo}-${slot.start}-${slot.end}`}
-                      className="absolute rounded-md cursor-pointer flex flex-col justify-center px-1.5 overflow-hidden transition-opacity duration-100"
+                      className={`absolute rounded-md ${readOnly ? "" : "cursor-pointer"} flex flex-col justify-center px-1.5 overflow-hidden transition-opacity duration-100`}
                       style={{
                         top: lane * LANE_HEIGHT + 6,
                         height: LANE_HEIGHT - 12,

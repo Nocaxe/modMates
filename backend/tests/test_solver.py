@@ -1,7 +1,7 @@
 """Unit tests for the Z3-based timetable solver."""
 from types import SimpleNamespace
-from app.solver import solve, solve_joint, _parse, _slots_clash, _option_passes_hard
 
+from app.solver import _option_passes_hard, _parse, _slots_clash, solve, solve_joint
 
 # helpers
 
