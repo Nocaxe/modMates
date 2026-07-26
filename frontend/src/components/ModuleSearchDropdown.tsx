@@ -97,6 +97,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
         if (cached) {
             onAddModule(moduleDetailToModule(cached));
             setIsOpen(false);
+            setQuery("");
             return;
         }
 
@@ -108,6 +109,7 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
                 setModuleDetails((prev) => ({ ...prev, [summary.moduleCode]: detail }));
                 onAddModule(moduleDetailToModule(detail));
                 setIsOpen(false);
+                setQuery("");
             })
             .catch(() => setError("Failed to load module details"))
             .finally(() => {
@@ -127,6 +129,11 @@ export function ModuleSearchDropdown({ onAddModule, addedModuleCodes }: Props) {
           value={query}
           onChange={handleInputChange}
           onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && results.length > 0) {
+              handleSelectModule(results[0]);
+            }
+          }}
         />
         {loading && (
           <span className="text-gray-400 self-center text-sm">Loading...</span>
