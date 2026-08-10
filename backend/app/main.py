@@ -11,9 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.routers import groups, modules, optimiser, timetable
-
-from .auth import get_current_user
+from app.routers import groups, modules, optimiser, profile, timetable
 
 
 @asynccontextmanager
@@ -35,6 +33,7 @@ app.include_router(modules.router)
 app.include_router(timetable.router)
 app.include_router(optimiser.router)
 app.include_router(groups.router)
+app.include_router(profile.router)
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
@@ -51,8 +50,3 @@ def db_health_check(db: Session = Depends(get_db)):
     except Exception as e:  # noqa: BLE001
         return {"status": "error", "details": str(e)}
 
-# Test endpoint for authentication
-@app.get("/profile")
-def get_profile(user: dict = Depends(get_current_user)):
-    '''Endpoint to retrieve the authenticated user's profile.'''
-    return {"user_id": user["sub"], "email": user.get("email")}

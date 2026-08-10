@@ -136,7 +136,7 @@ def get_optimiser_members(group_id: int, user=Depends(get_current_user), db: Ses
             continue
         profile = db.get(Profile, m.user_id)
         members_info.append(GroupMemberOut(
-            name = profile.email,
+            name = profile.display_name or profile.email,
             ranked_selections = [timetable.selection]
         ))
 

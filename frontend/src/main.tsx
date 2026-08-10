@@ -5,6 +5,7 @@ import './index.css'
 import AppLayout from './layouts/AppLayout.tsx'
 import LandingLayout from './layouts/LandingLayout.tsx'
 import { AuthProvider } from "./contexts/AuthContext"
+import { ProfileProvider } from "./contexts/ProfileContext"
 import LandingPage from './Pages/LandingPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
 import GroupsPage from './Pages/GroupsPage.tsx'
@@ -33,7 +34,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ProfileProvider>
+        <RouterProvider router={router} />
+      </ProfileProvider>
     </AuthProvider>
   </StrictMode>,
 )
