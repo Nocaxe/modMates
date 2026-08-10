@@ -4,6 +4,20 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class ProfileOut(BaseModel):
+    '''Response schema for a user profile.'''
+
+    user_id: str
+    email: str
+    display_name: str | None = None
+
+
+class ProfileUpdate(BaseModel):
+    '''Request body schema for updating a user profile.'''
+
+    display_name: str | None = None
+
+
 class TimetableBody(BaseModel):
     '''Request body schema for saving a user's timetable.'''
 
