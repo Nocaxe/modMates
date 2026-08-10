@@ -17,10 +17,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const [profile, setProfile] = useState<Profile | null>(null)
 
     const refreshProfile = useCallback(() => {
-        if (!session) {
-            setProfile(null)
-            return
-        }
+        if (!session) return
         getProfile(session.access_token)
             .then(setProfile)
             .catch(console.error)
@@ -30,11 +27,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         refreshProfile()
     }, [refreshProfile])
 
-    const displayName: string = profile?.display_name ?? profile?.email ?? ''
-    const rawDisplayName: string = profile?.display_name ?? ''
+    // When session is null (logged out), treat profile as null without a setState call
+    const effectiveProfile = session ? profile : null
+    const displayName: string = effectiveProfile?.display_name ?? effectiveProfile?.email ?? ''
+    const rawDisplayName: string = effectiveProfile?.display_name ?? ''
 
     return (
-        <ProfileContext value={{ profile, displayName, rawDisplayName, refreshProfile }}>
+        <ProfileContext value={{ profile: effectiveProfile, displayName, rawDisplayName, refreshProfile }}>
             {children}
         </ProfileContext>
     )

@@ -23,7 +23,7 @@ export function SolutionPicker({ solutions, selectedIndex, onSelect }: Props) {
       <div className="flex gap-2 flex-wrap">
         {solutions.map((sol, i) => (
           <button
-            key={i}
+            key={sol.score}
             type="button"
             onClick={() => onSelect(i)}
             className={`

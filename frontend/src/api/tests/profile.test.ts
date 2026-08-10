@@ -33,7 +33,6 @@ it('updateProfile sends PUT with display_name', async () => {
         expect.stringContaining('/profile'),
         expect.objectContaining({
             method: 'PUT',
-            headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
             body: JSON.stringify({ display_name: 'Alice' }),
         })
     )

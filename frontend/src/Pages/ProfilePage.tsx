@@ -16,7 +16,6 @@ export default function ProfilePage() {
   const [nameInput, setNameInput] = useState<string | null>(null);
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMessage, setNameMessage] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const displayedNameInput: string =
     nameInput !== null ? nameInput : rawDisplayName;
 
