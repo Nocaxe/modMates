@@ -79,6 +79,7 @@ export default function OptimiserPage() {
   const [solutions, setSolutions] = useState<RankedSolution[]>([]);
   const [selectedSolutionIndex, setSelectedSolutionIndex] = useState(0);
   const [constraintError, setConstraintError] = useState<string | null>(null);
+  const [isOptimising, setIsOptimising] = useState(false);
  
   // On mount: restore from localStorage immediately, then overwrite with API data if logged in
   useEffect(() => {
@@ -125,24 +126,28 @@ export default function OptimiserPage() {
 
   async function handleOptimise() {
     setConstraintError(null);
+    setIsOptimising(true);
+    try {
+      const result = await optimise({
+        modules,
+        selection,
+        locked: [...locked],
+        skipped: [...skipped],
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        constraints: constraints.map(({ id: _id, ...rest }) => rest),
+      });
 
-    const result = await optimise({
-      modules,
-      selection,
-      locked: [...locked],
-      skipped: [...skipped],
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      constraints: constraints.map(({ id: _id, ...rest }) => rest),
-    });
-
-    if (result.solutions.length > 0 && result.solutions[0].score >= 0) {
-      setSolutions(result.solutions);
-      setSelectedSolutionIndex(0);
-      setSelection(result.solutions[0].selection);
-    } else {
-      setConstraintError(
-        "No valid timetable found. Your hard constraints cannot all be satisfied. Try relaxing or removing some constraints.",
-      );
+      if (result.solutions.length > 0 && result.solutions[0].score >= 0) {
+        setSolutions(result.solutions);
+        setSelectedSolutionIndex(0);
+        setSelection(result.solutions[0].selection);
+      } else {
+        setConstraintError(
+          "No valid timetable found. Your hard constraints cannot all be satisfied. Try relaxing or removing some constraints.",
+        );
+      }
+    } finally {
+      setIsOptimising(false);
     }
   }
 
@@ -203,9 +208,16 @@ export default function OptimiserPage() {
         onClick={() => {
           void handleOptimise();
         }}
-        className="w-full py-3 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
+        disabled={isOptimising}
+        className="w-full py-3 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        Optimise
+        {isOptimising && (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+        )}
+        {isOptimising ? "Optimising..." : "Optimise"}
       </button>
       {constraintError && (
         <div className="flex items-start gap-2 px-4 py-3 bg-red-950 border border-red-700 rounded-xl text-red-300 text-sm">

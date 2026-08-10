@@ -20,6 +20,7 @@ export function useGroupOptimise({
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [exportMessage, setExportMessage] = useState<string | null>(null);
+    const [isOptimising, setIsOptimising] = useState(false);
 
     // Helper function to obtain result for the current indexed user
     function myResultAt(index: number): JointMemberResult | null {
@@ -32,6 +33,7 @@ export function useGroupOptimise({
         if (!accessToken || groupId === null) return;
         setError(null);
         setExportMessage(null);
+        setIsOptimising(true);
         try {
             const result = await jointOptimise(accessToken, groupId);
             if (result.solutions.length === 0) {
@@ -42,6 +44,8 @@ export function useGroupOptimise({
         setSelectedIndex(0);
         } catch (err) {
             setError( err instanceof Error ? err.message : "Joint optimisation failed.");
+        } finally {
+            setIsOptimising(false);
         }
     }
 
@@ -97,6 +101,7 @@ export function useGroupOptimise({
         memberProposedSelection,
         error,
         exportMessage,
+        isOptimising,
         runOptimise,
         selectSolution,
         exportSelection,
