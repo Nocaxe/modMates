@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
+import { useProfile } from "../contexts/ProfileContext"
 
 export function Header() {
     const { session, signOut } = useAuth()
+    const { displayName } = useProfile()
     const navigate = useNavigate()
 
     async function onSignOut() {
@@ -22,7 +24,7 @@ export function Header() {
                 Profile
             </button>
             {session && <>
-                <p className="text-white py-2 px-4">Logged in as {session.user.email}</p>
+                <p className="text-white py-2 px-4">Logged in as {displayName}</p>
                 <button onClick={() => void onSignOut()} className="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-600">
                     Sign out
                 </button>
