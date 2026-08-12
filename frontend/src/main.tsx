@@ -7,6 +7,7 @@ import LandingLayout from './layouts/LandingLayout.tsx'
 import { AuthProvider } from "./contexts/AuthContext"
 import { ProfileProvider } from "./contexts/ProfileContext"
 import LandingPage from './Pages/LandingPage.tsx'
+import ResetPasswordPage from './Pages/ResetPasswordPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
 import GroupsPage from './Pages/GroupsPage.tsx'
 import GroupDetailPage from './Pages/GroupDetailPage.tsx'
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
     element: <LandingLayout />,
     children: [
       { path: '/', element: <LandingPage /> },
+      { path: '/reset-password', element: <ProtectedRoute><ResetPasswordPage /></ProtectedRoute>}
     ]
   },
   {
