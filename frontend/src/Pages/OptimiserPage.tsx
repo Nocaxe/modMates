@@ -12,6 +12,7 @@ import {
 import { optimise, type RankedSolution} from "../api/optimise"
 import { useAuth } from "../contexts/AuthContext";
 import type { Constraint } from "../types/constraints";
+import { exportToNUSMods } from "../utils/nusmodsExport";
 
 const LS_KEY = "modmates-timetable";
 
@@ -151,6 +152,12 @@ export default function OptimiserPage() {
     }
   }
 
+  function handleExportToNUSMods() {
+    const url = exportToNUSMods(modules, selection);
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   function handleSolutionSelect(index: number) {
     setSelectedSolutionIndex(index);
     setSelection(solutions[index].selection);
@@ -218,6 +225,13 @@ export default function OptimiserPage() {
           </svg>
         )}
         {isOptimising ? "Optimising..." : "Optimise"}
+      </button>
+      <button
+        type="button"
+        onClick={handleExportToNUSMods}
+        className="w-full py-3 text-gray-200 text-sm font-semibold rounded-xl transition-colors bg-gray-700 hover:bg-gray-600 active:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Export to NUSMods
       </button>
       {constraintError && (
         <div className="flex items-start gap-2 px-4 py-3 bg-red-950 border border-red-700 rounded-xl text-red-300 text-sm">

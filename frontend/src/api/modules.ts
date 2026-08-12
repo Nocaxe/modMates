@@ -71,5 +71,6 @@ export function moduleDetailToModule(detail: ModuleDetail): Module {
     code: detail.moduleCode,
     title: detail.title,
     lessons,
+    semester: detail.semesterData[0]?.semester,
   };
 }

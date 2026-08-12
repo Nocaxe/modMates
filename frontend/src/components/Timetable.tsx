@@ -16,6 +16,7 @@ export interface Module {
   code: string;
   title: string;
   lessons: Record<string, LessonGroup>; // Lesson type, lesson group
+  semester?: number; // NUSMods semester (1 = Semester 1, 2 = Semester 2, 3 / 4 = Special Term)
 }
 
 export interface ModuleColour {
