@@ -23,6 +23,9 @@ export function Header() {
             <button onClick={() => void navigate('/profile')} className="text-white py-2 px-4 rounded hover:bg-gray-700">
                 Profile
             </button>
+            <button onClick={() => void navigate('/guide')} className="text-white py-2 px-4 rounded hover:bg-gray-700">
+                Guide
+            </button>
             {session && <>
                 <p className="text-white py-2 px-4">Logged in as {displayName}</p>
                 <button onClick={() => void onSignOut()} className="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-600">

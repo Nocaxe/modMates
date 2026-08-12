@@ -9,6 +9,7 @@ import { ProfileProvider } from "./contexts/ProfileContext"
 import LandingPage from './Pages/LandingPage.tsx'
 import ResetPasswordPage from './Pages/ResetPasswordPage.tsx'
 import OptimiserPage from './Pages/OptimiserPage.tsx'
+import GuidePage from './Pages/GuidePage.tsx'
 import GroupsPage from './Pages/GroupsPage.tsx'
 import GroupDetailPage from './Pages/GroupDetailPage.tsx'
 import ProfilePage from './Pages/ProfilePage.tsx'
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: 'optimiser', element: <OptimiserPage /> },
+      { path: 'guide', element: <GuidePage /> },
       { path: 'groups', element: <ProtectedRoute><GroupsPage /></ProtectedRoute> },
       { path: 'groups/:groupId', element: <ProtectedRoute><GroupDetailPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> }

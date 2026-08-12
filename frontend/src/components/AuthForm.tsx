@@ -83,6 +83,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     Continue as guest
                 </button>
             </p>
+            <p className="text-gray-300">
+                New to modMates?
+                <button onClick={() => void navigate('/guide')} className="text-blue-500 hover:underline ml-1">
+                    Read the guide
+                </button>
+            </p>
         </div>
     )
 }
