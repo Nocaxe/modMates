@@ -7,15 +7,11 @@ A group timetable optimisation web app for NUS students. modMates lets friend gr
 ## Features
 
 - NUSMods API integration — search modules and view timetable slots
-- Group optimiser — solve for slot assignments that maximise shared slots across a group (WIP)
-- Personal constraints — block out times, prefer certain slot types, etc. (WIP)
-- Collaborative sessions — group members submit constraints and see their timetables reoptimise together (WIP)
+- Group optimiser — solve for slot assignments that maximise shared slots across a group
+- Personal constraints — block out times, prefer certain slot types, etc.
 
-- Social discovery board and smart group matching (WIP)
-- Optimisation analytics and multi-solution comparison (WIP)
-- AI-powered natural language constraint input (WIP)
-- NUSMods export (WIP)
-- Accounts and group management (WIP)
+- Optimisation analytics and multi-solution comparison
+- Accounts and group management
 
 ---
 
